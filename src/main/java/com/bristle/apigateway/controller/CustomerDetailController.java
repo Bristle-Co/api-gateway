@@ -1,17 +1,12 @@
 package com.bristle.apigateway.controller;
 
-import com.bristle.apigateway.converter.CustomerDetailEntityConverter;
 import com.bristle.apigateway.model.CustomerEntity;
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.service.CustomerDetailService;
-import com.bristle.apigateway.util.ProtobufUtil;
-import com.bristle.proto.common.ApiError;
 import com.bristle.proto.common.RequestContext;
-import com.bristle.proto.common.ResponseContext;
-import com.bristle.proto.customer_detail.Customer;
-import com.bristle.proto.customer_detail.GetAllCustomersResponse;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,48 +18,51 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @RequestMapping(path = "api/v1/customer-detail")
 @RestController
 public class CustomerDetailController {
 
+    Logger log = LoggerFactory.getLogger(CustomerDetailController.class);
+
+
     CustomerDetailService m_customerDetailService;
 
-    CustomerDetailEntityConverter m_customerConverter;
-
     @Autowired
-    public CustomerDetailController(CustomerDetailService m_customerDetailService, CustomerDetailEntityConverter m_customerConverter) {
+    public CustomerDetailController(CustomerDetailService m_customerDetailService) {
         this.m_customerDetailService = m_customerDetailService;
-        this.m_customerConverter = m_customerConverter;
     }
 
     @GetMapping("/getAllCustomers")
-    public ResponseEntity<ResponseWrapper<List<CustomerEntity>>> getAllCustomers(HttpServletRequest httpRequest) {
-        GetAllCustomersResponse response = m_customerDetailService.getAllCustomers();
-        ResponseContext responseContext = response.getResponseContext();
-        if (responseContext.hasError()) {
-            ApiError error = responseContext.getError();
+    public ResponseEntity<ResponseWrapper<List<CustomerEntity>>> getAllCustomers(
+            HttpServletRequest httpRequest) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: "+requestId + "getAllCustomers request received");
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            List<CustomerEntity> resultList= m_customerDetailService.getAllCustomers(requestContextBuilder);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    resultList
+            ), HttpStatus.OK);
+
+        } catch (Exception exception){
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    httpRequest.getRequestURI(),
+                    requestId,
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    error.getErrorMessage()
+                    exception.getMessage()
             ), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        List<Customer> customerProtoList = response.getCustomerList();
-        List<CustomerEntity> result = customerProtoList.stream()
-                .map(customer -> m_customerConverter.protoToEntity(customer))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(new ResponseWrapper<>(
-                httpRequest.getRequestURI(),
-                HttpStatus.OK.value(),
-                "sucess",
-                result
-        ), HttpStatus.OK);
     }
 
-    @PostMapping("/addCustomer")
-    public ResponseEntity<?> addCustomer(
+    @PostMapping("/upsertCustomer")
+    public ResponseEntity<ResponseWrapper<CustomerEntity>> upsertCustomer(
             @RequestParam(name = "customerId", required = true) String customerId,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "contactName", required = false) String contactName,
@@ -75,25 +73,44 @@ public class CustomerDetailController {
             @RequestParam(name = "address", required = false) String address,
             @RequestParam(name = "taxId", required = false) String taxId,
             @RequestParam(name = "receiver", required = false) String receiver,
-            @RequestParam(name = "note", required = false) String note
+            @RequestParam(name = "note", required = false) String note,
+            HttpServletRequest httpRequest
     ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: "+requestId + "getAllCustomers request received");
+        RequestContext.Builder requestContext = RequestContext.newBuilder();
+        requestContext.setRequestId(requestId);
+        CustomerEntity customerEntity = new CustomerEntity(
+                customerId,
+                name,
+                contactName,
+                contactNumber,
+                contactMobileNumber,
+                faxNumber,
+                postalCode,
+                address,
+                taxId,
+                receiver,
+                note
+        );
+
         try {
-            m_customerDetailService.addCustomer(new CustomerEntity(
-                    customerId,
-                    name,
-                    contactName,
-                    contactNumber,
-                    contactMobileNumber,
-                    faxNumber,
-                    postalCode,
-                    address,
-                    taxId,
-                    receiver,
-                    note
-            ));
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            CustomerEntity addedCustomer = m_customerDetailService.upsertCustomer(requestContext,customerEntity);
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    addedCustomer
+            ), HttpStatus.OK);
+
+        } catch (Exception exception){
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -1,35 +1,66 @@
 package com.bristle.apigateway.service;
 
+import com.bristle.apigateway.converter.CustomerDetailEntityConverter;
 import com.bristle.apigateway.model.CustomerEntity;
 import com.bristle.proto.common.RequestContext;
+import com.bristle.proto.common.ResponseContext;
 import com.bristle.proto.customer_detail.CustomerDetailServiceGrpc;
 import com.bristle.proto.customer_detail.GetAllCustomersRequest;
 import com.bristle.proto.customer_detail.GetAllCustomersResponse;
+import com.bristle.proto.customer_detail.UpsertCustomerRequest;
+import com.bristle.proto.customer_detail.UpsertCustomerResponse;
 import net.devh.boot.grpc.client.inject.GrpcClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ServerErrorException;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerDetailService {
 
+    Logger log = LoggerFactory.getLogger(CustomerDetailService.class);
     @GrpcClient("customer_detail_grpc_service")
     CustomerDetailServiceGrpc.CustomerDetailServiceBlockingStub m_customerDetailGrpcClient;
 
+    CustomerDetailEntityConverter m_customerConverter;
+
+    public CustomerDetailService(CustomerDetailEntityConverter customerConverter) {
+        this.m_customerConverter = customerConverter;
+    }
+
     @Transactional(readOnly = true)
-    public GetAllCustomersResponse getAllCustomers(){
+    public List<CustomerEntity> getAllCustomers(RequestContext.Builder requestContext) throws Exception {
         // grpc request to customer-detail
-        String requestId = UUID.randomUUID().toString();
-        RequestContext requestContext = RequestContext.newBuilder().setRequestId(requestId).build();
         GetAllCustomersRequest request = GetAllCustomersRequest.newBuilder().setRequestContext(requestContext).build();
-        return m_customerDetailGrpcClient.getAllCustomers(request);
+        GetAllCustomersResponse response = m_customerDetailGrpcClient.getAllCustomers(request);
+        log.info("Request id: "+request.getRequestContext().getRequestId()
+                + "getAllCustomers grpc request to customer-detail-service sent");
+
+        ResponseContext responseContext = response.getResponseContext();
+        if(responseContext.hasError()){
+            throw new ServerErrorException(responseContext.getError().getErrorMessage(), (Throwable)null);
+        }
+        return response.getCustomerList().stream().map(m_customerConverter::protoToEntity).collect(Collectors.toList());
     }
 
     @Transactional
-    public void addCustomer(CustomerEntity customerEntity) throws Exception {
+    public CustomerEntity upsertCustomer(RequestContext.Builder requestContext, CustomerEntity customerEntity) throws Exception {
         // grpc request to customer-detail
+        UpsertCustomerRequest.Builder requestBuilder = UpsertCustomerRequest.newBuilder();
+        requestBuilder.setRequestContext(requestContext);
+        requestBuilder.setCustomer(m_customerConverter.entityToProto(customerEntity));
+
+        UpsertCustomerResponse response = m_customerDetailGrpcClient.upsertCustomer(requestBuilder.build());
+        log.info("Request id: "+requestBuilder.getRequestContext().getRequestId()
+                + "upsert grpc request to customer-detail-service sent. " + customerEntity.toString());
+        ResponseContext responseContext = response.getResponseContext();
+        if(responseContext.hasError()){
+            throw new ServerErrorException(responseContext.getError().getErrorMessage(), (Throwable)null);
+        }
+        return m_customerConverter.protoToEntity(response.getCustomer());
     }
 }

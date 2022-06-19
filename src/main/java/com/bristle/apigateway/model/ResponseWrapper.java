@@ -6,6 +6,8 @@ public class ResponseWrapper<T> {
     // also reserved for future in case any information should be added to the response json structure
 
     String path;
+
+    String requestId;
     int status;
     String message;
     T data;
@@ -13,14 +15,16 @@ public class ResponseWrapper<T> {
     public ResponseWrapper() {
     }
 
-    public ResponseWrapper(String path, int status, String message) {
+    public ResponseWrapper(String path, String requestId, int status, String message) {
         this.path = path;
+        this.requestId = requestId;
         this.status = status;
         this.message = message;
     }
 
-    public ResponseWrapper(String path, int status, String message, T data) {
+    public ResponseWrapper(String path, String requestId, int status, String message, T data) {
         this.path = path;
+        this.requestId = requestId;
         this.status = status;
         this.message = message;
         this.data = data;
@@ -32,6 +36,14 @@ public class ResponseWrapper<T> {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public int getStatus() {
@@ -57,6 +69,4 @@ public class ResponseWrapper<T> {
     public void setData(T data) {
         this.data = data;
     }
-
-
 }
