@@ -5,6 +5,8 @@ import com.bristle.apigateway.model.CustomerEntity;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.common.ResponseContext;
 import com.bristle.proto.customer_detail.CustomerDetailServiceGrpc;
+import com.bristle.proto.customer_detail.DeleteCustomerRequest;
+import com.bristle.proto.customer_detail.DeleteCustomerResponse;
 import com.bristle.proto.customer_detail.GetAllCustomersRequest;
 import com.bristle.proto.customer_detail.GetAllCustomersResponse;
 import com.bristle.proto.customer_detail.UpsertCustomerRequest;
@@ -42,7 +44,7 @@ public class CustomerDetailService {
 
         ResponseContext responseContext = response.getResponseContext();
         if(responseContext.hasError()){
-            throw new ServerErrorException(responseContext.getError().getErrorMessage(), (Throwable)null);
+            throw new Exception(responseContext.getError().getErrorMessage());
         }
         return response.getCustomerList().stream().map(m_customerConverter::protoToEntity).collect(Collectors.toList());
     }
@@ -59,8 +61,29 @@ public class CustomerDetailService {
                 + "upsert grpc request to customer-detail-service sent. " + customerEntity.toString());
         ResponseContext responseContext = response.getResponseContext();
         if(responseContext.hasError()){
-            throw new ServerErrorException(responseContext.getError().getErrorMessage(), (Throwable)null);
+            throw new Exception(responseContext.getError().getErrorMessage());
         }
         return m_customerConverter.protoToEntity(response.getCustomer());
     }
+
+    @Transactional
+    public CustomerEntity deleteCustomerById(RequestContext.Builder requestContext, String customerId) throws Exception{
+        DeleteCustomerRequest request = DeleteCustomerRequest.newBuilder()
+                .setRequestContext(requestContext)
+                .setCustomerId(customerId).build();
+        DeleteCustomerResponse response = m_customerDetailGrpcClient.deleteCustomer(request);
+
+        ResponseContext responseContext = response.getResponseContext();
+
+        // Make sure to check if there is error first
+        // cuz when there is error there is no customer either
+        if(responseContext.hasError()){
+            throw new Exception(responseContext.getError().getErrorMessage());
+        }
+
+        if(!response.hasDeletedCustomer()){
+            // only reach here when the customerId provided does not map to any customer in db
+            return null;
+        }
+        return m_customerConverter.protoToEntity(response.getDeletedCustomer());}
 }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -110,6 +111,46 @@ public class CustomerDetailController {
                     requestId,
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/deleteCustomer")
+    public ResponseEntity<ResponseWrapper<CustomerEntity>> deleteCustomer(
+            @RequestParam(name = "customerId", required = true) String customerId,
+            HttpServletRequest httpRequest ){
+
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: "+requestId + "getAllCustomers request received");
+        RequestContext.Builder requestContext = RequestContext.newBuilder();
+        requestContext.setRequestId(requestId);
+
+        try {
+            CustomerEntity deletedCustomer = m_customerDetailService.deleteCustomerById(requestContext, customerId);
+            if(deletedCustomer == null){
+                return new ResponseEntity<>(new ResponseWrapper<>(
+                        httpRequest.getRequestURI(),
+                        requestId,
+                        HttpStatus.ACCEPTED.value(),
+                        "Customer with id " + customerId + " does not exist.",
+                        deletedCustomer
+                ), HttpStatus.ACCEPTED);
+            }
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    deletedCustomer
+            ), HttpStatus.OK);
+        }catch (Exception e){
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    e.getMessage()
             ), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
