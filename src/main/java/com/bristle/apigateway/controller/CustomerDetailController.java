@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,7 @@ public class CustomerDetailController {
         try {
             List<CustomerEntity> resultList= m_customerDetailService.getAllCustomers(requestContextBuilder);
             return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.OK.value(),
@@ -54,6 +56,7 @@ public class CustomerDetailController {
 
         } catch (Exception exception){
             return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -98,6 +101,8 @@ public class CustomerDetailController {
         try {
             CustomerEntity addedCustomer = m_customerDetailService.upsertCustomer(requestContext,customerEntity);
             return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.OK.value(),
@@ -107,6 +112,7 @@ public class CustomerDetailController {
 
         } catch (Exception exception){
             return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -129,6 +135,7 @@ public class CustomerDetailController {
             CustomerEntity deletedCustomer = m_customerDetailService.deleteCustomerById(requestContext, customerId);
             if(deletedCustomer == null){
                 return new ResponseEntity<>(new ResponseWrapper<>(
+                        LocalDateTime.now(),
                         httpRequest.getRequestURI(),
                         requestId,
                         HttpStatus.ACCEPTED.value(),
@@ -138,6 +145,7 @@ public class CustomerDetailController {
             }
 
             return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.OK.value(),
@@ -147,6 +155,7 @@ public class CustomerDetailController {
         }catch (Exception e){
 
             return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
