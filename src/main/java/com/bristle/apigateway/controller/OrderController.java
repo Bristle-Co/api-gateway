@@ -2,7 +2,12 @@ package com.bristle.apigateway.controller;
 
 
 import com.bristle.apigateway.model.ResponseWrapper;
+import com.bristle.apigateway.model.customer_detail.CustomerEntity;
+import com.bristle.apigateway.model.order.OrderEntity;
+import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.apigateway.service.OrderService;
+import com.bristle.proto.common.RequestContext;
+import org.hibernate.internal.CriteriaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,20 +26,52 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RequestMapping(path = "api/v1/order")
 @RestController
 public class OrderController {
-//
-//    OrderService m_orderService;
-//    Logger LOG = LoggerFactory.getLogger(OrderController.class);
-//
-//    @Autowired
-//    public OrderController(OrderService m_orderService) {
-//
-//        this.m_orderService = m_orderService;
-//
-//    }
+
+    OrderService m_orderService;
+
+    Logger log = LoggerFactory.getLogger(OrderController.class);
+
+    public OrderController(OrderService m_orderService) {
+        this.m_orderService = m_orderService;
+    }
+
+    @PostMapping("/upsertOrder")
+    public ResponseEntity<ResponseWrapper<OrderEntity>> upsertOrder(
+            @RequestBody OrderEntity orderEntity,
+            HttpServletRequest httpRequest) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + "upsertOrder request received. " + orderEntity.toString() + " ProductEntryList: " +
+                orderEntity.getProductEntries().stream().map(ProductEntryEntity::toString));
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            OrderEntity resultList = m_orderService.upsertOrder(requestContextBuilder, orderEntity);
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    resultList
+            ), HttpStatus.OK);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + "upsertOrder failed. " + exception.getMessage());
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 //
 //    @GetMapping("/getOrdersByLimitAndOffset")
 //    public ResponseEntity<ResponseWrapper<List<OrderEntity>>> getOrdersByLimitAndOffset(

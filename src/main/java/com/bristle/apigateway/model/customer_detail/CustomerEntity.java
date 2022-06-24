@@ -1,4 +1,4 @@
-package com.bristle.apigateway.model;
+package com.bristle.apigateway.model.customer_detail;
 
 import org.springframework.lang.NonNull;
 

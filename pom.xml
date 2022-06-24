@@ -103,6 +103,8 @@
 					<includes>
 						<inlcude>common/*.proto</inlcude>
 						<inlcude>customer_detail/*.proto</inlcude>
+						<inlcude>order/*.proto</inlcude>
+
 					</includes>
 <!--					include all proto files by default-->
 					<protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>

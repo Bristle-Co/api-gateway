@@ -2,16 +2,43 @@ package com.bristle.apigateway.service;
 
 
 
+import com.bristle.apigateway.converter.order.OrderEntityConverter;
+import com.bristle.apigateway.model.order.OrderEntity;
+import com.bristle.proto.common.RequestContext;
+import com.bristle.proto.customer_detail.UpsertCustomerRequest;
+import com.bristle.proto.order.OrderServiceGrpc;
+import com.bristle.proto.order.UpsertOrderRequest;
+import com.bristle.proto.order.UpsertOrderResponse;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class OrderService {
+
+    Logger log = LoggerFactory.getLogger(OrderService.class);
+    @GrpcClient("order_grpc_service")
+    OrderServiceGrpc.OrderServiceBlockingStub m_orderGrpcService;
+
+    private final OrderEntityConverter m_orderConverter;
+
+    OrderService(OrderEntityConverter orderConverter){
+        this.m_orderConverter = orderConverter;
+    }
+
+    public OrderEntity upsertOrder(RequestContext.Builder requestContext, OrderEntity orderEntity) throws Exception {
+        UpsertOrderRequest request = UpsertOrderRequest.newBuilder()
+                        .setRequestContext(requestContext)
+                .setOrder(m_orderConverter.entityToProto(orderEntity)).build();
+        UpsertOrderResponse response = m_orderGrpcService.upsertOrder(request);
+
+        if(response.getResponseContext().hasError()){
+            throw new Exception(response.getResponseContext().getError().getErrorMessage());
+        }
+
+        return m_orderConverter.protoToEntity(response.getOrder());
+    }
 
 //    private final OrderRepository m_orderRepository;
 //    Logger LOG = LoggerFactory.getLogger(OrderService.class);

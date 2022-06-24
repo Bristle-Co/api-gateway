@@ -1,6 +1,6 @@
-package com.bristle.apigateway.converter;
+package com.bristle.apigateway.converter.customer_detail;
 
-import com.bristle.apigateway.model.CustomerEntity;
+import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.proto.customer_detail.Customer;
 import org.springframework.stereotype.Component;
 

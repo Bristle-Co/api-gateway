@@ -1,13 +1,12 @@
 package com.bristle.apigateway.controller;
 
-import com.bristle.apigateway.model.CustomerEntity;
+import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.service.CustomerDetailService;
 import com.bristle.proto.common.RequestContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,11 +26,8 @@ import java.util.UUID;
 public class CustomerDetailController {
 
     Logger log = LoggerFactory.getLogger(CustomerDetailController.class);
-
-
     CustomerDetailService m_customerDetailService;
 
-    @Autowired
     public CustomerDetailController(CustomerDetailService m_customerDetailService) {
         this.m_customerDetailService = m_customerDetailService;
     }

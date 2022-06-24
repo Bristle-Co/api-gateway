@@ -1,7 +1,7 @@
 package com.bristle.apigateway.service;
 
-import com.bristle.apigateway.converter.CustomerDetailEntityConverter;
-import com.bristle.apigateway.model.CustomerEntity;
+import com.bristle.apigateway.converter.customer_detail.CustomerDetailEntityConverter;
+import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.common.ResponseContext;
 import com.bristle.proto.customer_detail.CustomerDetailServiceGrpc;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ServerErrorException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +33,6 @@ public class CustomerDetailService {
         this.m_customerConverter = customerConverter;
     }
 
-    @Transactional(readOnly = true)
     public List<CustomerEntity> getAllCustomers(RequestContext.Builder requestContext) throws Exception {
         // grpc request to customer-detail
         GetAllCustomersRequest request = GetAllCustomersRequest.newBuilder().setRequestContext(requestContext).build();
@@ -49,7 +47,6 @@ public class CustomerDetailService {
         return response.getCustomerList().stream().map(m_customerConverter::protoToEntity).collect(Collectors.toList());
     }
 
-    @Transactional
     public CustomerEntity upsertCustomer(RequestContext.Builder requestContext, CustomerEntity customerEntity) throws Exception {
         // grpc request to customer-detail
         UpsertCustomerRequest.Builder requestBuilder = UpsertCustomerRequest.newBuilder();
@@ -66,7 +63,6 @@ public class CustomerDetailService {
         return m_customerConverter.protoToEntity(response.getCustomer());
     }
 
-    @Transactional
     public CustomerEntity deleteCustomerById(RequestContext.Builder requestContext, String customerId) throws Exception{
         DeleteCustomerRequest request = DeleteCustomerRequest.newBuilder()
                 .setRequestContext(requestContext)
