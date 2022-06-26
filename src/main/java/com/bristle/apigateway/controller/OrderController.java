@@ -50,14 +50,14 @@ public class OrderController {
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            OrderEntity resultList = m_orderService.upsertOrder(requestContextBuilder, orderEntity);
+            OrderEntity upsertedOrder = m_orderService.upsertOrder(requestContextBuilder, orderEntity);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.OK.value(),
                     "success",
-                    resultList
+                    upsertedOrder
             ), HttpStatus.OK);
 
         } catch (Exception exception) {

@@ -4,6 +4,7 @@ package com.bristle.apigateway.service;
 
 import com.bristle.apigateway.converter.order.OrderEntityConverter;
 import com.bristle.apigateway.model.order.OrderEntity;
+import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.customer_detail.UpsertCustomerRequest;
 import com.bristle.proto.order.OrderServiceGrpc;
@@ -13,6 +14,9 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -28,6 +32,15 @@ public class OrderService {
     }
 
     public OrderEntity upsertOrder(RequestContext.Builder requestContext, OrderEntity orderEntity) throws Exception {
+        // if the product entry is being inserted the first time
+        // the id column will be null, thus give it an uuid, otherwise keep it
+        List<ProductEntryEntity> productList = orderEntity.getProductEntries();
+        for(ProductEntryEntity item: productList){
+            if(item.getProductEntryId() == null){
+                item.setProductEntryId(UUID.randomUUID().toString());
+            }
+        }
+
         UpsertOrderRequest request = UpsertOrderRequest.newBuilder()
                         .setRequestContext(requestContext)
                 .setOrder(m_orderConverter.entityToProto(orderEntity)).build();
