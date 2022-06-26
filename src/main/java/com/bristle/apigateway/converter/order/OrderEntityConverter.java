@@ -27,6 +27,7 @@ public class OrderEntityConverter {
         long dueDate = orderProto.getDueDate();
         String note = orderProto.getNote();
         long deliveredAt = orderProto.getDeliveredAt();
+        long issuedAt = orderProto.getIssuedAt();
 
         OrderEntity result = new OrderEntity(
                 orderId == Integer.MIN_VALUE ? null : orderId,
@@ -35,7 +36,8 @@ public class OrderEntityConverter {
                 dueDate == Long.MIN_VALUE ? null : new Date(dueDate),
                 note.equals("") ? null : note,
                 deliveredAt == Long.MIN_VALUE ? null : LocalDateTime.ofEpochSecond(deliveredAt, 0, ZoneOffset.UTC),
-                null);
+                issuedAt == Long.MIN_VALUE ? null : LocalDateTime.ofEpochSecond(issuedAt, 0, ZoneOffset.UTC)
+                ,null);
 
         if(orderProto.getProductEntryCount() > 0) {
             List<ProductEntryEntity> entityList
@@ -53,6 +55,7 @@ public class OrderEntityConverter {
         Date dueDate = orderEntity.getDueDate();
         String note = orderEntity.getNote();
         LocalDateTime deliveredAt = orderEntity.getDeliveredAt();
+        LocalDateTime issuedAt = orderEntity.getIssuedAt();
 
         Order.Builder result = Order.newBuilder()
                 .setOrderId(orderId == null ? Integer.MIN_VALUE : orderId)
@@ -60,7 +63,8 @@ public class OrderEntityConverter {
                 .setCustomerId(customerId == null ? "" : customerId)
                 .setDueDate(dueDate == null ? Long.MIN_VALUE : dueDate.getTime())
                 .setNote(note == null ? "" : note)
-                .setDeliveredAt(deliveredAt == null ? Long.MIN_VALUE : deliveredAt.toEpochSecond(ZoneOffset.UTC));
+                .setDeliveredAt(deliveredAt == null ? Long.MIN_VALUE : deliveredAt.toEpochSecond(ZoneOffset.UTC))
+                .setIssuedAt(issuedAt == null ? Long.MIN_VALUE : issuedAt.toEpochSecond(ZoneOffset.UTC));
 
         if(orderEntity.getProductEntries().size() > 0 ){
             List<ProductEntry> productEntriesList = orderEntity.getProductEntries().stream()
