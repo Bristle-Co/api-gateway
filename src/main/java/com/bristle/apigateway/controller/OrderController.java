@@ -21,10 +21,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Date;
+import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,72 +73,75 @@ public class OrderController {
             ), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//
-//    @GetMapping("/getOrdersByLimitAndOffset")
-//    public ResponseEntity<ResponseWrapper<List<OrderEntity>>> getOrdersByLimitAndOffset(
-//            @RequestParam(name = "limit", required = false) int limit,
-//            @RequestParam(name = "offset", required = false) int offset,
-//            HttpServletRequest request
-//    ) {
-//        // This order table is eventually going to be huge
-//        // we be careful when fetching all rows without a limit
-//        try {
-//            return new ResponseEntity<>(new ResponseWrapper<>(
-//                    request.getRequestURI(),
-//                    HttpStatus.ACCEPTED.value(),
-//                    HttpStatus.ACCEPTED.getReasonPhrase(),
-//                    m_orderService.getOrdersByLimitAndOffset(limit, offset))
-//                    , HttpStatus.ACCEPTED);
-//
-//        } catch (Exception e) {
-//            LOG.error(e.getMessage());
-//            return new ResponseEntity<>(new ResponseWrapper<>(
-//                    request.getRequestURI(),
-//                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-//                    e.getMessage()
-//            ), HttpStatus.INTERNAL_SERVER_ERROR);
-//
-//        }
-//    }
-//
-//    @PostMapping("/addOrder")
-//    public ResponseEntity<ResponseWrapper<OrderEntity>> addCustomer(
-//            @RequestParam(name = COLM_CUSTOMER_ORDER_ID, required = false)
-//            String customerOderId,
-//            @RequestParam(name = COLM_CUSTOMER_ID, required = false)
-//            String customerId,
-//            @RequestParam(name = COLM_DUE_DATE, required = false)
-//            String dueDateString,
-//            @RequestParam(name = COLM_NOTE, required = false)
-//            String note,
-//            @RequestParam(name = COLM_FINISHED_ISSUING_TICKETS_AT, required = false)
-//            LocalDateTime finishedIssuingTicketsAt,
-//            HttpServletRequest request
-//    ) {
-//        try {
-//            // due date should be passed in with the format 2022-03-30
-//            Date dueDate = new Date(new SimpleDateFormat("yyyy-dd-MM").parse(dueDateString).getTime());
-//            OrderEntity order = new OrderEntity(customerOderId, customerId, dueDate, note, finishedIssuingTicketsAt);
-//            m_orderService.addOrder(order);
-//            return new ResponseEntity<>(new ResponseWrapper<>(
-//                    request.getRequestURI(),
-//                    HttpStatus.CREATED.value(),
-//                    HttpStatus.CREATED.getReasonPhrase(),
-//                    order
-//            ), HttpStatus.CREATED);
-//        } catch (ParseException parseException) {
-//            // Catch ParseException separately cuz I want to add customer message
-//            return new ResponseEntity<>(new ResponseWrapper<>(
-//                            request.getRequestURI(),
-//                            HttpStatus.BAD_REQUEST.value(),
-//                            "Incorrect date format"
-//                    ), HttpStatus.BAD_REQUEST);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(new ResponseWrapper<>(
-//                    request.getRequestURI(),
-//                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-//                    e.getMessage()
-//            ), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+
+    @GetMapping("/getOrders")
+    public ResponseEntity<ResponseWrapper<List<OrderEntity>>> getOrders(
+            @RequestParam(name = "orderId", required = false) Integer orderId,
+            @RequestParam(name = "customerOrderId", required = false) String customerOrderId,
+            @RequestParam(name = "customerId", required = false) String customerId,
+            @RequestParam(name = "dueDateFrom", required = false) String dueDateFrom,
+            @RequestParam(name = "dueDateTo", required = false) String dueDateTo,
+            @RequestParam(name = "issuedAfter", required = false) String issuedAfter,
+            HttpServletRequest httpRequest
+    ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + "upsertOrder request received. ");
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            SimpleDateFormat yearMonthDate = new SimpleDateFormat("yyyy-MM-dd");
+            DateTimeFormatter yearMonthDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            Date dateFrom = null;
+            Date dateTo = null;
+            LocalDateTime issuedAfterDateTime = null;
+
+            // validate parameters
+            if (dueDateFrom != null) {
+                dateFrom = yearMonthDate.parse(dueDateFrom);
+            }
+            if(dueDateTo != null){
+                dateTo = yearMonthDate.parse(dueDateTo);
+            }
+            if(issuedAfter!=null){
+                issuedAfterDateTime = LocalDateTime.parse(issuedAfter, yearMonthDateFormatter);
+            }
+                return new ResponseEntity<>(new ResponseWrapper<>(
+                        LocalDateTime.now(),
+                        httpRequest.getRequestURI(),
+                        requestId,
+                        HttpStatus.ACCEPTED.value(),
+                        "success",
+                        m_orderService.getOrders(
+                                requestContextBuilder,
+                                orderId,
+                                customerOrderId,
+                                customerId,
+                                dateFrom,
+                                dateTo,
+                                issuedAfterDateTime)
+                ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (ParseException exception) {
+            log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
 }
