@@ -79,29 +79,12 @@ public class OrderService {
         // params are verified in controller layer, only need to do null check here
         OrderFilter.Builder filter = OrderFilter.newBuilder();
 
-        if(orderId!= null){
-            filter.setOrderId(orderId);
-        }
-
-        if(customerOrderId != null ){
-            filter.setCustomerOrderId(customerOrderId);
-        }
-
-        if(customerId != null){
-            filter.setCustomerId(customerId);
-        }
-
-        if(dueDateFrom!= null){
-            filter.setDueDateFrom(dueDateFrom.getTime());
-        }
-
-        if(dueDateTo!=null){
-            filter.setDueDateTo(dueDateTo.getTime());
-        }
-
-        if(issuedAfter != null){
-            filter.setIssuedAfter(issuedAfter.toEpochSecond(ZoneOffset.UTC));
-        }
+        filter.setOrderId(orderId==null ? Integer.MIN_VALUE : orderId);
+        filter.setCustomerOrderId(customerOrderId==null ? "" :customerOrderId);
+        filter.setCustomerId(customerId== null?"":customerId);
+        filter.setDueDateFrom(dueDateFrom == null? Long.MIN_VALUE : dueDateFrom.getTime());
+        filter.setDueDateTo(dueDateFrom == null? Long.MIN_VALUE : dueDateTo.getTime());
+        filter.setIssuedAfter(issuedAfter == null?Long.MIN_VALUE : issuedAfter.toEpochSecond(ZoneOffset.UTC));
 
         GetOrderRequest request = GetOrderRequest.newBuilder()
                 .setRequestContext(requestContext)

@@ -1,6 +1,8 @@
 package com.bristle.apigateway.model.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -50,6 +52,7 @@ public class ProductEntryEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = COLM_ORDER_ID_FK, referencedColumnName = OrderEntity.COLM_ORDER_ID)
     @JsonIgnore
+    @NotFound(action = NotFoundAction.IGNORE)
     private OrderEntity order;
 
     public ProductEntryEntity() {

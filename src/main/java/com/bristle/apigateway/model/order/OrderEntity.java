@@ -53,7 +53,7 @@ public class OrderEntity {
     // however the format of this string is different from customer to customer
     // thus we can not use it as primary key
     @Column(name = COLM_CUSTOMER_ORDER_ID, nullable = true)
-    private String customerOderId;
+    private String customerOrderId;
 
     // Foreign key to customers table
     @Column(name = COLM_CUSTOMER_ID, nullable = true)
@@ -86,7 +86,7 @@ public class OrderEntity {
     }
 
     public OrderEntity(Integer orderID,
-                       String customerOderId,
+                       String customerOrderId,
                        String customerId,
                        Date dueDate,
                        String note,
@@ -94,7 +94,7 @@ public class OrderEntity {
                        LocalDateTime issuedAt,
                        List<ProductEntryEntity> productEntries) {
         this.orderID = orderID;
-        this.customerOderId = customerOderId;
+        this.customerOrderId = customerOrderId;
         this.customerId = customerId;
         this.dueDate = dueDate;
         this.note = note;
@@ -115,12 +115,12 @@ public class OrderEntity {
         this.orderID = orderID;
     }
 
-    public String getCustomerOderId() {
-        return customerOderId;
+    public String getcustomerOrderId() {
+        return customerOrderId;
     }
 
-    public void setCustomerOderId(String customerOderId) {
-        this.customerOderId = customerOderId;
+    public void setcustomerOrderId(String customerOrderId) {
+        this.customerOrderId = customerOrderId;
     }
 
     public String getCustomerId() {
@@ -175,7 +175,7 @@ public class OrderEntity {
     public String toString() {
         return "OrderEntity{" +
                 "orderID=" + orderID +
-                ", customerOderId='" + customerOderId + '\'' +
+                ", customerOrderId='" + customerOrderId + '\'' +
                 ", customerId='" + customerId + '\'' +
                 ", dueDate=" + dueDate +
                 ", note='" + note + '\'' +

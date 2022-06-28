@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -90,6 +91,9 @@ public class OrderController {
 
         try {
             SimpleDateFormat yearMonthDate = new SimpleDateFormat("yyyy-MM-dd");
+
+            // even tho the issued_after field is a timestamp, we don't need such precise search,
+            // search by date for simplicity
             DateTimeFormatter yearMonthDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             Date dateFrom = null;
@@ -104,7 +108,7 @@ public class OrderController {
                 dateTo = yearMonthDate.parse(dueDateTo);
             }
             if(issuedAfter!=null){
-                issuedAfterDateTime = LocalDateTime.parse(issuedAfter, yearMonthDateFormatter);
+                issuedAfterDateTime = LocalDate.parse(issuedAfter, yearMonthDateFormatter).atStartOfDay();
             }
                 return new ResponseEntity<>(new ResponseWrapper<>(
                         LocalDateTime.now(),
@@ -120,7 +124,7 @@ public class OrderController {
                                 dateFrom,
                                 dateTo,
                                 issuedAfterDateTime)
-                ), HttpStatus.INTERNAL_SERVER_ERROR);
+                ), HttpStatus.OK);
 
         } catch (ParseException exception) {
             log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
