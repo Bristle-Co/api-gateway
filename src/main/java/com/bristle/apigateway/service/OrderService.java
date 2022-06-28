@@ -6,6 +6,8 @@ import com.bristle.apigateway.model.order.OrderEntity;
 import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.customer_detail.UpsertCustomerRequest;
+import com.bristle.proto.order.DeleteOrderRequest;
+import com.bristle.proto.order.DeleteOrderResponse;
 import com.bristle.proto.order.GetOrderRequest;
 import com.bristle.proto.order.GetOrderResponse;
 import com.bristle.proto.order.Order;
@@ -97,5 +99,18 @@ public class OrderService {
 
         return response.getOrderList().stream()
                 .map(m_orderConverter::protoToEntity).collect(Collectors.toList());
+    }
+
+    public OrderEntity deleteOrder(RequestContext.Builder requestContext, Integer orderId) throws Exception{
+        DeleteOrderRequest request = DeleteOrderRequest.newBuilder()
+                .setRequestContext(requestContext)
+                .setOrderId(orderId).build();
+        DeleteOrderResponse response = m_orderGrpcService.deleteOrder(request);
+
+        if (response.getResponseContext().hasError()) {
+            throw new Exception(response.getResponseContext().getError().getErrorMessage());
+        }
+
+        return m_orderConverter.protoToEntity(response.getDeletedOrder());
     }
 }

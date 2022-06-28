@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -104,27 +105,27 @@ public class OrderController {
             if (dueDateFrom != null) {
                 dateFrom = yearMonthDate.parse(dueDateFrom);
             }
-            if(dueDateTo != null){
+            if (dueDateTo != null) {
                 dateTo = yearMonthDate.parse(dueDateTo);
             }
-            if(issuedAfter!=null){
+            if (issuedAfter != null) {
                 issuedAfterDateTime = LocalDate.parse(issuedAfter, yearMonthDateFormatter).atStartOfDay();
             }
-                return new ResponseEntity<>(new ResponseWrapper<>(
-                        LocalDateTime.now(),
-                        httpRequest.getRequestURI(),
-                        requestId,
-                        HttpStatus.ACCEPTED.value(),
-                        "success",
-                        m_orderService.getOrders(
-                                requestContextBuilder,
-                                orderId,
-                                customerOrderId,
-                                customerId,
-                                dateFrom,
-                                dateTo,
-                                issuedAfterDateTime)
-                ), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.ACCEPTED.value(),
+                    "success",
+                    m_orderService.getOrders(
+                            requestContextBuilder,
+                            orderId,
+                            customerOrderId,
+                            customerId,
+                            dateFrom,
+                            dateTo,
+                            issuedAfterDateTime)
+            ), HttpStatus.OK);
 
         } catch (ParseException exception) {
             log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
@@ -148,4 +149,50 @@ public class OrderController {
 
         }
     }
+
+    @DeleteMapping("/deleteOrder")
+    public ResponseEntity<ResponseWrapper<OrderEntity>> getOrders(
+            @RequestParam(name = "orderId", required = true) Integer orderId
+            ,
+            HttpServletRequest httpRequest
+    ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + "deleteOrder request received. ");
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            if (orderId == null) throw new IllegalArgumentException("orderId can not be null");
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.ACCEPTED.value(),
+                    "success",
+                    m_orderService.deleteOrder(requestContextBuilder, orderId)
+            ), HttpStatus.OK);
+
+        } catch (IllegalArgumentException exception) {
+            log.error("Request id: " + requestId + "deleteOrder request failed. " + exception.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "orderId is invalid. Received: " + orderId
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
+
 }
