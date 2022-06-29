@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -83,7 +84,8 @@ public class OrderController {
             @RequestParam(name = "customerId", required = false) String customerId,
             @RequestParam(name = "dueDateFrom", required = false) String dueDateFrom,
             @RequestParam(name = "dueDateTo", required = false) String dueDateTo,
-            @RequestParam(name = "issuedAfter", required = false) String issuedAfter,
+            @RequestParam(name = "issuedAtFrom", required = false) String issuedAtFrom,
+            @RequestParam(name = "issuedAtTo", required = false) String issuedAtTo,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
@@ -99,7 +101,8 @@ public class OrderController {
 
             Date dateFrom = null;
             Date dateTo = null;
-            LocalDateTime issuedAfterDateTime = null;
+            LocalDateTime issuedAtFromDateTime = null;
+            LocalDateTime issuedAtToDateTime = null;
 
             // validate parameters
             if (dueDateFrom != null) {
@@ -108,8 +111,12 @@ public class OrderController {
             if (dueDateTo != null) {
                 dateTo = yearMonthDate.parse(dueDateTo);
             }
-            if (issuedAfter != null) {
-                issuedAfterDateTime = LocalDate.parse(issuedAfter, yearMonthDateFormatter).atStartOfDay();
+            if (issuedAtFrom != null) {
+                issuedAtFromDateTime = LocalDate.parse(issuedAtFrom, yearMonthDateFormatter).atStartOfDay();
+            }
+            if (issuedAtTo != null) {
+                // make this go to the end of day
+                issuedAtToDateTime = LocalDate.parse(issuedAtTo, yearMonthDateFormatter).atTime(LocalTime.MAX);
             }
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -124,7 +131,8 @@ public class OrderController {
                             customerId,
                             dateFrom,
                             dateTo,
-                            issuedAfterDateTime)
+                            issuedAtFromDateTime,
+                            issuedAtToDateTime)
             ), HttpStatus.OK);
 
         } catch (ParseException exception) {

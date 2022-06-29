@@ -71,9 +71,11 @@ public class OrderEntity {
     private String note;
 
     @Column(name = COLM_DELIVERED_AT, nullable = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime deliveredAt;
 
     @Column(name = COLM_ISSUED_AT, nullable = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime issuedAt;
 
     // The name of this mappedBy attribute is the name of the variable

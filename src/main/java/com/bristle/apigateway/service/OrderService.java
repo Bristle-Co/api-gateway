@@ -8,8 +8,8 @@ import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.customer_detail.UpsertCustomerRequest;
 import com.bristle.proto.order.DeleteOrderRequest;
 import com.bristle.proto.order.DeleteOrderResponse;
-import com.bristle.proto.order.GetOrderRequest;
-import com.bristle.proto.order.GetOrderResponse;
+import com.bristle.proto.order.GetOrdersRequest;
+import com.bristle.proto.order.GetOrdersResponse;
 import com.bristle.proto.order.Order;
 import com.bristle.proto.order.OrderFilter;
 import com.bristle.proto.order.OrderServiceGrpc;
@@ -75,7 +75,9 @@ public class OrderService {
                                        String customerId,
                                        Date dueDateFrom,
                                        Date dueDateTo,
-                                       LocalDateTime issuedAfter) throws Exception {
+                                       LocalDateTime issuedAtFrom,
+                                       LocalDateTime issuedAtTo
+                                       ) throws Exception {
 
         // put parameters into proto "OrderFilter" message
         // params are verified in controller layer, only need to do null check here
@@ -86,12 +88,13 @@ public class OrderService {
         filter.setCustomerId(customerId== null?"":customerId);
         filter.setDueDateFrom(dueDateFrom == null? Long.MIN_VALUE : dueDateFrom.getTime());
         filter.setDueDateTo(dueDateFrom == null? Long.MIN_VALUE : dueDateTo.getTime());
-        filter.setIssuedAfter(issuedAfter == null?Long.MIN_VALUE : issuedAfter.toEpochSecond(ZoneOffset.UTC));
+        filter.setIssuedAtFrom(issuedAtFrom == null?Long.MIN_VALUE : issuedAtFrom.toEpochSecond(ZoneOffset.UTC));
+        filter.setIssuedAtTo(issuedAtTo == null?Long.MIN_VALUE : issuedAtTo.toEpochSecond(ZoneOffset.UTC));
 
-        GetOrderRequest request = GetOrderRequest.newBuilder()
+        GetOrdersRequest request = GetOrdersRequest.newBuilder()
                 .setRequestContext(requestContext)
                 .setFilter(filter).build();
-        GetOrderResponse response = m_orderGrpcService.getOrders(request);
+        GetOrdersResponse response = m_orderGrpcService.getOrders(request);
 
         if (response.getResponseContext().hasError()) {
             throw new Exception(response.getResponseContext().getError().getErrorMessage());
