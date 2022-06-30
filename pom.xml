@@ -104,6 +104,7 @@
 						<inlcude>common/*.proto</inlcude>
 						<inlcude>customer_detail/*.proto</inlcude>
 						<inlcude>order/*.proto</inlcude>
+						<include>production_ticket/*.proto</include>
 
 					</includes>
 <!--					include all proto files by default-->
