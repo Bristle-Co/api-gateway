@@ -383,4 +383,37 @@ public class ProductionTicketEntity {
     public void setIssuedAt(LocalDateTime issuedAt) {
         this.issuedAt = issuedAt;
     }
+
+    @Override
+    public String toString() {
+        return "ProductionTicketEntity{" +
+                "ticketId=" + ticketId +
+                ", customerId='" + customerId + '\'' +
+                ", dueDate=" + dueDate +
+                ", productName='" + productName + '\'' +
+                ", bristleType='" + bristleType + '\'' +
+                ", model='" + model + '\'' +
+                ", innerTubeType='" + innerTubeType + '\'' +
+                ", bristleDiameter=" + bristleDiameter +
+                ", quantity=" + quantity +
+                ", alumTubeType='" + alumTubeType + '\'' +
+                ", alumRimType='" + alumRimType + '\'' +
+                ", modelNote='" + modelNote + '\'' +
+                ", ProductionNote1='" + ProductionNote1 + '\'' +
+                ", ProductionNote2='" + ProductionNote2 + '\'' +
+                ", ProductionNote3='" + ProductionNote3 + '\'' +
+                ", ProductionNote4='" + ProductionNote4 + '\'' +
+                ", ProductionNote5='" + ProductionNote5 + '\'' +
+                ", ProductionNote6='" + ProductionNote6 + '\'' +
+                ", donePreparingAt=" + donePreparingAt +
+                ", preparedBy='" + preparedBy + '\'' +
+                ", doneTwiningAt=" + doneTwiningAt +
+                ", twinedBy='" + twinedBy + '\'' +
+                ", doneTrimmingAt=" + doneTrimmingAt +
+                ", trimmedBy='" + trimmedBy + '\'' +
+                ", donePackagingAt=" + donePackagingAt +
+                ", packagedBy='" + packagedBy + '\'' +
+                ", issuedAt=" + issuedAt +
+                '}';
+    }
 }

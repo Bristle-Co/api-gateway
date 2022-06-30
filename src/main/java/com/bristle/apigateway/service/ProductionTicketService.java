@@ -9,6 +9,8 @@ import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.order.OrderServiceGrpc;
 import com.bristle.proto.order.UpsertOrderRequest;
 import com.bristle.proto.order.UpsertOrderResponse;
+import com.bristle.proto.production_ticket.DeleteProductionTicketRequest;
+import com.bristle.proto.production_ticket.DeleteProductionTicketResponse;
 import com.bristle.proto.production_ticket.ProductionTicketServiceGrpc;
 import com.bristle.proto.production_ticket.UpsertProductionTicketRequest;
 import com.bristle.proto.production_ticket.UpsertProductionTicketResponse;
@@ -55,4 +57,18 @@ public class ProductionTicketService {
         return m_productionTicketConverter.protoToEntity(response.getProductionTicket());
     }
 
+    public ProductionTicketEntity deleteProductionTicket(RequestContext.Builder requestContext,
+                                                         Integer ticketId) throws Exception {
+        DeleteProductionTicketRequest request = DeleteProductionTicketRequest.newBuilder()
+                .setRequestContext(requestContext)
+                .setProductionTicketId(ticketId).build();
+        DeleteProductionTicketResponse response =
+                m_ProductionTicketGrpcService.deleteProductionTicket(request);
+
+        if (response.getResponseContext().hasError()) {
+            throw new Exception(response.getResponseContext().getError().getErrorMessage());
+        }
+
+        return m_productionTicketConverter.protoToEntity(response.getProductionTicket());
+    }
 }

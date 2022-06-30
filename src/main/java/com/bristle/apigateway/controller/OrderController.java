@@ -49,7 +49,7 @@ public class OrderController {
             @RequestBody OrderEntity orderEntity,
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertOrder request received. " + orderEntity.toString() + " ProductEntryList: " +
+        log.info("Request id: " + requestId + "upsertOrder request received. \n" + orderEntity.toString() + " ProductEntryList: " +
                 orderEntity.getProductEntries().stream().map(ProductEntryEntity::toString));
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
@@ -89,7 +89,11 @@ public class OrderController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertOrder request received. ");
+        log.info("Request id: " + requestId + "upsertOrder request received. " +
+                "olderId: " + orderId + " customerOrderId: " + customerOrderId +
+                " customerId: " + customerId + " dueDateFrom: " + dueDateFrom +
+                " dueDateTo: " + dueDateTo + " issuedAtFrom: " + issuedAtFrom +
+                " issuedAtTo: " + issuedAtTo);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
@@ -122,7 +126,7 @@ public class OrderController {
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
-                    HttpStatus.ACCEPTED.value(),
+                    HttpStatus.OK.value(),
                     "success",
                     m_orderService.getOrders(
                             requestContextBuilder,
@@ -160,35 +164,24 @@ public class OrderController {
 
     @DeleteMapping("/deleteOrder")
     public ResponseEntity<ResponseWrapper<OrderEntity>> getOrders(
-            @RequestParam(name = "orderId", required = true) Integer orderId
-            ,
+            @RequestParam(name = "orderId", required = true) Integer orderId,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "deleteOrder request received. ");
+        log.info("Request id: " + requestId + "deleteOrder request received. orderId: " + orderId);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (orderId == null) throw new IllegalArgumentException("orderId can not be null");
+            if (orderId <= 0) throw new IllegalArgumentException("orderId must > 0");
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
-                    HttpStatus.ACCEPTED.value(),
+                    HttpStatus.OK.value(),
                     "success",
                     m_orderService.deleteOrder(requestContextBuilder, orderId)
             ), HttpStatus.OK);
-
-        } catch (IllegalArgumentException exception) {
-            log.error("Request id: " + requestId + "deleteOrder request failed. " + exception.getMessage());
-            return new ResponseEntity<>(new ResponseWrapper<>(
-                    LocalDateTime.now(),
-                    httpRequest.getRequestURI(),
-                    requestId,
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "orderId is invalid. Received: " + orderId
-            ), HttpStatus.INTERNAL_SERVER_ERROR);
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());

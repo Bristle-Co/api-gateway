@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,11 +37,11 @@ public class CustomerDetailController {
     public ResponseEntity<ResponseWrapper<List<CustomerEntity>>> getAllCustomers(
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: "+requestId + "getAllCustomers request received");
+        log.info("Request id: " + requestId + "getAllCustomers request received");
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            List<CustomerEntity> resultList= m_customerDetailService.getAllCustomers(requestContextBuilder);
+            List<CustomerEntity> resultList = m_customerDetailService.getAllCustomers(requestContextBuilder);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -50,7 +51,7 @@ public class CustomerDetailController {
                     resultList
             ), HttpStatus.OK);
 
-        } catch (Exception exception){
+        } catch (Exception exception) {
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -63,42 +64,18 @@ public class CustomerDetailController {
 
     @PostMapping("/upsertCustomer")
     public ResponseEntity<ResponseWrapper<CustomerEntity>> upsertCustomer(
-            @RequestParam(name = "customerId", required = true) String customerId,
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "contactName", required = false) String contactName,
-            @RequestParam(name = "contactNumber", required = false) String contactNumber,
-            @RequestParam(name = "contactMobileNumber", required = false) String contactMobileNumber,
-            @RequestParam(name = "faxNumber", required = false) String faxNumber,
-            @RequestParam(name = "postalCode", required = false) String postalCode,
-            @RequestParam(name = "address", required = false) String address,
-            @RequestParam(name = "taxId", required = false) String taxId,
-            @RequestParam(name = "receiver", required = false) String receiver,
-            @RequestParam(name = "note", required = false) String note,
+            @RequestBody CustomerEntity customerEntity,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: "+requestId + "getAllCustomers request received");
+        log.info("Request id: " + requestId + "getAllCustomers request received. \n" + customerEntity.toString());
         RequestContext.Builder requestContext = RequestContext.newBuilder();
         requestContext.setRequestId(requestId);
-        CustomerEntity customerEntity = new CustomerEntity(
-                customerId,
-                name,
-                contactName,
-                contactNumber,
-                contactMobileNumber,
-                faxNumber,
-                postalCode,
-                address,
-                taxId,
-                receiver,
-                note
-        );
 
         try {
-            CustomerEntity addedCustomer = m_customerDetailService.upsertCustomer(requestContext,customerEntity);
+            CustomerEntity addedCustomer = m_customerDetailService.upsertCustomer(requestContext, customerEntity);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
-
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.OK.value(),
@@ -106,7 +83,7 @@ public class CustomerDetailController {
                     addedCustomer
             ), HttpStatus.OK);
 
-        } catch (Exception exception){
+        } catch (Exception exception) {
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -120,16 +97,16 @@ public class CustomerDetailController {
     @DeleteMapping("/deleteCustomer")
     public ResponseEntity<ResponseWrapper<CustomerEntity>> deleteCustomer(
             @RequestParam(name = "customerId", required = true) String customerId,
-            HttpServletRequest httpRequest ){
+            HttpServletRequest httpRequest) {
 
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: "+requestId + "getAllCustomers request received");
+        log.info("Request id: " + requestId + "getAllCustomers request received");
         RequestContext.Builder requestContext = RequestContext.newBuilder();
         requestContext.setRequestId(requestId);
 
         try {
             CustomerEntity deletedCustomer = m_customerDetailService.deleteCustomerById(requestContext, customerId);
-            if(deletedCustomer == null){
+            if (deletedCustomer == null) {
                 return new ResponseEntity<>(new ResponseWrapper<>(
                         LocalDateTime.now(),
                         httpRequest.getRequestURI(),
@@ -148,7 +125,7 @@ public class CustomerDetailController {
                     "success",
                     deletedCustomer
             ), HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
