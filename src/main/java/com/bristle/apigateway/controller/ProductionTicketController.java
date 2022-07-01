@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(path = "api/v1/production_ticket")
@@ -86,7 +94,96 @@ public class ProductionTicketController {
                     HttpStatus.OK.value(),
                     "success",
                     m_productionTicketService.deleteProductionTicket(requestContextBuilder, ticketId)
-            ),HttpStatus.OK);
+            ), HttpStatus.OK);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + "deleteProdctionTicket failed. " + exception.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
+
+    @GetMapping("/getProductionTickets")
+    public ResponseEntity<ResponseWrapper<List<ProductionTicketEntity>>> getProductionTickets(
+            @RequestParam(name = "ticketId", required = false) Integer ticketId,
+            @RequestParam(name = "customerId", required = false) String customerId,
+            @RequestParam(name = "bristleType", required = false) String bristleType,
+            @RequestParam(name = "model", required = false) String model,
+            @RequestParam(name = "productName", required = false) String productName,
+            @RequestParam(name = "dueDateFrom", required = false) String dueDateFrom,
+            @RequestParam(name = "dueDateTo", required = false) String dueDateTo,
+            @RequestParam(name = "issuedAtFrom", required = false) String issuedAtFrom,
+            @RequestParam(name = "issuedAtTo", required = false) String issuedAtTo,
+            HttpServletRequest httpRequest
+    ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + "upsertOrder request received. " +
+                "ticketId: " + ticketId + " customerId: " + customerId +
+                " bristleType: " + bristleType + " model: " + model +
+                " productName: " + productName + " dueDateFrom: " + dueDateFrom +
+                " dueDateTo: " + dueDateTo + " issuedAtFrom: " + issuedAtFrom + " issuedAtTo: " + issuedAtTo);
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            SimpleDateFormat yearMonthDate = new SimpleDateFormat("yyyy-MM-dd");
+
+            // even tho the issued_after field is a timestamp, we don't need such precise search,
+            // search by date for simplicity
+            DateTimeFormatter yearMonthDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            Date dateFrom = null;
+            Date dateTo = null;
+            LocalDateTime issuedAtFromDateTime = null;
+            LocalDateTime issuedAtToDateTime = null;
+
+            // validate parameters
+            if (dueDateFrom != null) {
+                dateFrom = yearMonthDate.parse(dueDateFrom);
+            }
+            if (dueDateTo != null) {
+                dateTo = yearMonthDate.parse(dueDateTo);
+            }
+            if (issuedAtFrom != null) {
+                issuedAtFromDateTime = LocalDate.parse(issuedAtFrom, yearMonthDateFormatter).atStartOfDay();
+            }
+            if (issuedAtTo != null) {
+                // make this go to the end of day
+                issuedAtToDateTime = LocalDate.parse(issuedAtTo, yearMonthDateFormatter).atTime(LocalTime.MAX);
+            }
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    m_productionTicketService.getProductionTicket(
+                            requestContextBuilder,
+                            ticketId,
+                            customerId,
+                            bristleType,
+                            model,
+                            productName,
+                            dateFrom,
+                            dateTo,
+                            issuedAtFromDateTime,
+                            issuedAtToDateTime)
+            ), HttpStatus.OK);
+
+        } catch (ParseException exception) {
+            log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
@@ -100,4 +197,5 @@ public class ProductionTicketController {
 
         }
     }
+
 }
