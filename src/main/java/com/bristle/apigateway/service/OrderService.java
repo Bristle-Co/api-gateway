@@ -70,6 +70,8 @@ public class OrderService {
     }
 
     public List<OrderEntity> getOrders(RequestContext.Builder requestContext,
+                                       Integer pageIndex,
+                                       Integer pageSize,
                                        Integer orderId,
                                        String customerOrderId,
                                        String customerId,
@@ -83,6 +85,8 @@ public class OrderService {
         // params are verified in controller layer, only need to do null check here
         OrderFilter.Builder filter = OrderFilter.newBuilder();
 
+        filter.setPageIndex(pageIndex == null ? 0 : pageIndex);
+        filter.setPageSize(pageSize == null? 20 : pageSize);
         filter.setOrderId(orderId==null ? Integer.MIN_VALUE : orderId);
         filter.setCustomerOrderId(customerOrderId==null ? "" :customerOrderId);
         filter.setCustomerId(customerId== null?"":customerId);

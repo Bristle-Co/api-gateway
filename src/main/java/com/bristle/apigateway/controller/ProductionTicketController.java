@@ -111,6 +111,8 @@ public class ProductionTicketController {
 
     @GetMapping("/getProductionTickets")
     public ResponseEntity<ResponseWrapper<List<ProductionTicketEntity>>> getProductionTickets(
+            @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
+            @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "ticketId", required = false) Integer ticketId,
             @RequestParam(name = "customerId", required = false) String customerId,
             @RequestParam(name = "bristleType", required = false) String bristleType,
@@ -124,6 +126,7 @@ public class ProductionTicketController {
     ) {
         String requestId = UUID.randomUUID().toString();
         log.info("Request id: " + requestId + "upsertOrder request received. " +
+                "pageIndex" + pageIndex + "pageSize" + pageSize +
                 "ticketId: " + ticketId + " customerId: " + customerId +
                 " bristleType: " + bristleType + " model: " + model +
                 " productName: " + productName + " dueDateFrom: " + dueDateFrom +
@@ -131,6 +134,7 @@ public class ProductionTicketController {
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
+            // parse time stamp here to validate in format of input
             SimpleDateFormat yearMonthDate = new SimpleDateFormat("yyyy-MM-dd");
 
             // even tho the issued_after field is a timestamp, we don't need such precise search,
@@ -164,6 +168,8 @@ public class ProductionTicketController {
                     "success",
                     m_productionTicketService.getProductionTicket(
                             requestContextBuilder,
+                            pageIndex,
+                            pageSize,
                             ticketId,
                             customerId,
                             bristleType,

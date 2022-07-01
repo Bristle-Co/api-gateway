@@ -15,6 +15,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -71,18 +72,22 @@ public class ProductionTicketService {
     }
 
     public List<ProductionTicketEntity> getProductionTicket(RequestContext.Builder requestContext,
-                                                 Integer ticketId,
-                                                 String customerId,
-                                                 String bristleType,
-                                                 String model,
-                                                 String productName,
-                                                 Date dueDateFrom,
-                                                 Date dueDateTo,
-                                                 LocalDateTime issuedAtFrom,
-                                                 LocalDateTime issuedAtTo) throws Exception {
+                                                            Integer pageIndex,
+                                                            Integer pageSize,
+                                                            Integer ticketId,
+                                                            String customerId,
+                                                            String bristleType,
+                                                            String model,
+                                                            String productName,
+                                                            Date dueDateFrom,
+                                                            Date dueDateTo,
+                                                            LocalDateTime issuedAtFrom,
+                                                            LocalDateTime issuedAtTo) throws Exception {
 
         ProductionTicketFilter.Builder filter = ProductionTicketFilter.newBuilder();
 
+        filter.setPageIndex(pageIndex == null ? 0 : pageIndex);
+        filter.setPageSize(pageSize == null ? 20 : pageSize);
         filter.setTicketId(ticketId == null ? Integer.MIN_VALUE : ticketId);
         filter.setCustomerId(customerId == null ? "" : customerId);
         filter.setBristleType(bristleType == null ? "" : bristleType);

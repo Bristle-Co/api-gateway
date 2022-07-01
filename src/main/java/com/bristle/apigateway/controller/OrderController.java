@@ -79,6 +79,8 @@ public class OrderController {
 
     @GetMapping("/getOrders")
     public ResponseEntity<ResponseWrapper<List<OrderEntity>>> getOrders(
+            @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
+            @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "orderId", required = false) Integer orderId,
             @RequestParam(name = "customerOrderId", required = false) String customerOrderId,
             @RequestParam(name = "customerId", required = false) String customerId,
@@ -90,6 +92,7 @@ public class OrderController {
     ) {
         String requestId = UUID.randomUUID().toString();
         log.info("Request id: " + requestId + "upsertOrder request received. " +
+                "pageIndex" + pageIndex + "pageSize" + pageSize +
                 "olderId: " + orderId + " customerOrderId: " + customerOrderId +
                 " customerId: " + customerId + " dueDateFrom: " + dueDateFrom +
                 " dueDateTo: " + dueDateTo + " issuedAtFrom: " + issuedAtFrom +
@@ -130,6 +133,8 @@ public class OrderController {
                     "success",
                     m_orderService.getOrders(
                             requestContextBuilder,
+                            pageIndex,
+                            pageSize,
                             orderId,
                             customerOrderId,
                             customerId,
