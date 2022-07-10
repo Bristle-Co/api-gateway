@@ -5,17 +5,17 @@ import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.common.ResponseContext;
 import com.bristle.proto.customer_detail.CustomerDetailServiceGrpc;
+import com.bristle.proto.customer_detail.CustomerFilter;
 import com.bristle.proto.customer_detail.DeleteCustomerRequest;
 import com.bristle.proto.customer_detail.DeleteCustomerResponse;
-import com.bristle.proto.customer_detail.GetAllCustomersRequest;
-import com.bristle.proto.customer_detail.GetAllCustomersResponse;
+import com.bristle.proto.customer_detail.GetCustomersRequest;
+import com.bristle.proto.customer_detail.GetCustomersResponse;
 import com.bristle.proto.customer_detail.UpsertCustomerRequest;
 import com.bristle.proto.customer_detail.UpsertCustomerResponse;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,10 +33,19 @@ public class CustomerDetailService {
         this.m_customerConverter = customerConverter;
     }
 
-    public List<CustomerEntity> getAllCustomers(RequestContext.Builder requestContext) throws Exception {
+    public List<CustomerEntity> getCustomers(RequestContext.Builder requestContext,
+                                             CustomerFilter filter,
+                                             Integer pageSize,
+                                             Integer pageIndex) throws Exception {
         // grpc request to customer-detail
-        GetAllCustomersRequest request = GetAllCustomersRequest.newBuilder().setRequestContext(requestContext).build();
-        GetAllCustomersResponse response = m_customerDetailGrpcClient.getAllCustomers(request);
+        GetCustomersRequest request = GetCustomersRequest.newBuilder()
+                .setRequestContext(requestContext)
+                .setFilter(filter)
+                .setPageIndex(pageIndex)
+                .setPageSize(pageSize)
+                .build();
+
+        GetCustomersResponse response = m_customerDetailGrpcClient.getCustomers(request);
         log.info("Request id: "+request.getRequestContext().getRequestId()
                 + "getAllCustomers grpc request to customer-detail-service sent");
 

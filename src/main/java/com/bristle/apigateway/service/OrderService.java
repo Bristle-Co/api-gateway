@@ -85,8 +85,6 @@ public class OrderService {
         // params are verified in controller layer, only need to do null check here
         OrderFilter.Builder filter = OrderFilter.newBuilder();
 
-        filter.setPageIndex(pageIndex == null ? 0 : pageIndex);
-        filter.setPageSize(pageSize == null? 20 : pageSize);
         filter.setOrderId(orderId==null ? Integer.MIN_VALUE : orderId);
         filter.setCustomerOrderId(customerOrderId==null ? "" :customerOrderId);
         filter.setCustomerId(customerId== null?"":customerId);
@@ -97,7 +95,9 @@ public class OrderService {
 
         GetOrdersRequest request = GetOrdersRequest.newBuilder()
                 .setRequestContext(requestContext)
-                .setFilter(filter).build();
+                .setFilter(filter)
+                .setPageIndex(pageIndex == null ? 0 : pageIndex)
+                .setPageSize(pageSize == null? 20 : pageSize).build();
         GetOrdersResponse response = m_orderGrpcService.getOrders(request);
 
         if (response.getResponseContext().hasError()) {

@@ -86,8 +86,6 @@ public class ProductionTicketService {
 
         ProductionTicketFilter.Builder filter = ProductionTicketFilter.newBuilder();
 
-        filter.setPageIndex(pageIndex == null ? 0 : pageIndex);
-        filter.setPageSize(pageSize == null ? 20 : pageSize);
         filter.setTicketId(ticketId == null ? Integer.MIN_VALUE : ticketId);
         filter.setCustomerId(customerId == null ? "" : customerId);
         filter.setBristleType(bristleType == null ? "" : bristleType);
@@ -100,7 +98,9 @@ public class ProductionTicketService {
 
         GetProductionTicketsRequest request = GetProductionTicketsRequest.newBuilder()
                 .setRequestContext(requestContext)
-                .setFilter(filter).build();
+                .setFilter(filter)
+                .setPageIndex(pageIndex == null ? 0 : pageIndex)
+                .setPageSize(pageSize == null ? 20 : pageSize).build();
         GetProductionTicketsResponse response = m_ProductionTicketGrpcService.getProductionTickets(request);
 
         if (response.getResponseContext().hasError()) {
