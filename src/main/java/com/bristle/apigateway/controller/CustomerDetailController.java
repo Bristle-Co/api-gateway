@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+// must have @CrossOrigin else browser can't receive any payload
+@CrossOrigin
 @RequestMapping(path = "api/v1/customer_detail")
 @RestController
 public class CustomerDetailController {
@@ -46,7 +49,10 @@ public class CustomerDetailController {
             @RequestParam(name = "address", required = false) String address,
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "getAllCustomers request received");
+        log.info("Request id: " + requestId + "getAllCustomers request received. pageIndex: "+ pageIndex
+                + ", pageSize: "+ pageSize + ", customerId: "+ customerId + ", name: "+ name
+                + ", contactName: "+ contactName + ", contactNumber: "+ contactNumber
+                + ", address: "+ address);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         // construct filter
@@ -54,7 +60,7 @@ public class CustomerDetailController {
                 .setCustomerId(customerId == null ? "" : customerId)
                 .setName(name == null ? "" : name)
                 .setContactName(contactName == null ? "" : contactName)
-                .setContactNumber(contactName == null ? "" : contactNumber)
+                .setContactNumber(contactNumber == null ? "" : contactNumber)
                 .setAddress(address == null ? "" : address)
                 .build();
 
