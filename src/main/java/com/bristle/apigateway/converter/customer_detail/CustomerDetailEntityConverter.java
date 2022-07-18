@@ -55,7 +55,7 @@ public class CustomerDetailEntityConverter {
                 .setContactMobileNumber(contactMobileNumber == null ? "" : contactMobileNumber)
                 .setFaxNumber(faxNumber == null ? "" : faxNumber)
                 .setPostalCode(postalCode == null ? "" : postalCode)
-                .setAddress(address == null ? "" : postalCode)
+                .setAddress(address == null ? "" : address)
                 .setTaxId(taxId == null ? "" : taxId)
                 .setReceiver(receiver ==  null ? "" : receiver)
                 .setNote(note == null ? "" : note).build();
