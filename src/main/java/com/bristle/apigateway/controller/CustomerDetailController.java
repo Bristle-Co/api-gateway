@@ -38,7 +38,7 @@ public class CustomerDetailController {
         this.m_customerDetailService = m_customerDetailService;
     }
 
-    @GetMapping("/getCustomers")
+    @GetMapping
     public ResponseEntity<ResponseWrapper<List<CustomerEntity>>> getCustomers(
             @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
@@ -89,7 +89,7 @@ public class CustomerDetailController {
         }
     }
 
-    @PutMapping("/updateCustomer")
+    @PutMapping
     public ResponseEntity<ResponseWrapper<CustomerEntity>> updateCustomer(
             @RequestBody CustomerEntity customerEntity,
             HttpServletRequest httpRequest
@@ -134,7 +134,7 @@ public class CustomerDetailController {
         }
     }
 
-    @PostMapping("/createCustomer")
+    @PostMapping
     public ResponseEntity<ResponseWrapper<CustomerEntity>> createCustomer(
             @RequestBody CustomerEntity customerEntity,
             HttpServletRequest httpRequest
@@ -179,7 +179,7 @@ public class CustomerDetailController {
         }
     }
 
-    @DeleteMapping("/deleteCustomer")
+    @DeleteMapping
     public ResponseEntity<ResponseWrapper<CustomerEntity>> deleteCustomer(
             @RequestParam(name = "customerId", required = true) String customerId,
             HttpServletRequest httpRequest) {
