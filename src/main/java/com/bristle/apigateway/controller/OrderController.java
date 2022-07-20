@@ -94,7 +94,7 @@ public class OrderController {
     ) {
         String requestId = UUID.randomUUID().toString();
         log.info("Request id: " + requestId + "upsertOrder request received. " +
-                "pageIndex" + pageIndex + "pageSize" + pageSize +
+                "pageIndex: " + pageIndex + " pageSize: " + pageSize +
                 "olderId: " + orderId + " customerOrderId: " + customerOrderId +
                 " customerId: " + customerId + " dueDateFrom: " + dueDateFrom +
                 " dueDateTo: " + dueDateTo + " issuedAtFrom: " + issuedAtFrom +
