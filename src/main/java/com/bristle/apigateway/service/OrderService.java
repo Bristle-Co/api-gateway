@@ -71,26 +71,9 @@ public class OrderService {
     public List<OrderEntity> getOrders(RequestContext.Builder requestContext,
                                        Integer pageIndex,
                                        Integer pageSize,
-                                       Integer orderId,
-                                       String customerOrderId,
-                                       String customerId,
-                                       Date dueDateFrom,
-                                       Date dueDateTo,
-                                       LocalDateTime issuedAtFrom,
-                                       LocalDateTime issuedAtTo
+                                       OrderFilter filter
                                        ) throws Exception {
 
-        // put parameters into proto "OrderFilter" message
-        // params are verified in controller layer, only need to do null check here
-        OrderFilter.Builder filter = OrderFilter.newBuilder();
-
-        filter.setOrderId(orderId==null ? Integer.MIN_VALUE : orderId);
-        filter.setCustomerOrderId(customerOrderId==null ? "" :customerOrderId);
-        filter.setCustomerId(customerId== null?"":customerId);
-        filter.setDueDateFrom(dueDateFrom == null? Long.MIN_VALUE : dueDateFrom.getTime());
-        filter.setDueDateTo(dueDateFrom == null? Long.MIN_VALUE : dueDateTo.getTime());
-        filter.setIssuedAtFrom(issuedAtFrom == null?Long.MIN_VALUE : issuedAtFrom.toEpochSecond(ZoneOffset.UTC));
-        filter.setIssuedAtTo(issuedAtTo == null?Long.MIN_VALUE : issuedAtTo.toEpochSecond(ZoneOffset.UTC));
 
         GetOrdersRequest request = GetOrdersRequest.newBuilder()
                 .setRequestContext(requestContext)
