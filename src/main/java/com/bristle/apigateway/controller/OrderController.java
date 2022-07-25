@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,7 +60,7 @@ public class OrderController {
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (orderEntity.getOrderID() != null) {
+            if (orderEntity.getOrderId() != null) {
                 throw new Exception("Order Id must be null");
             }
 
@@ -102,11 +103,11 @@ public class OrderController {
                     0,
                     1,
                     OrderFilter.newBuilder()
-                            .setOrderId(orderEntity.getOrderID())
+                            .setOrderId(orderEntity.getOrderId())
                             .build()
             );
             if (existingOrderList.isEmpty()) {
-                throw new Exception("Order with id " + orderEntity.getOrderID() + "  does not exist");
+                throw new Exception("Order with id " + orderEntity.getOrderId() + "  does not exist");
             }
 
             OrderEntity upsertedOrder = m_orderService.upsertOrder(requestContextBuilder, orderEntity);
@@ -167,16 +168,16 @@ public class OrderController {
             LocalDateTime issuedAtToDateTime = null;
 
             // validate parameters
-            if (dueDateFrom != null) {
+            if (StringUtils.hasText(dueDateFrom)) {
                 dateFrom = yearMonthDate.parse(dueDateFrom);
             }
-            if (dueDateTo != null) {
+            if (StringUtils.hasText(dueDateTo)) {
                 dateTo = yearMonthDate.parse(dueDateTo);
             }
-            if (issuedAtFrom != null) {
+            if (StringUtils.hasText(issuedAtFrom)) {
                 issuedAtFromDateTime = LocalDate.parse(issuedAtFrom, yearMonthDateFormatter).atStartOfDay();
             }
-            if (issuedAtTo != null) {
+            if (StringUtils.hasText(issuedAtTo)) {
                 // make this go to the end of day
                 issuedAtToDateTime = LocalDate.parse(issuedAtTo, yearMonthDateFormatter).atTime(LocalTime.MAX);
             }

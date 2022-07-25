@@ -49,7 +49,7 @@ public class OrderEntityConverter {
     }
 
     public Order entityToProto(OrderEntity orderEntity) {
-        Integer orderId = orderEntity.getOrderID();
+        Integer orderId = orderEntity.getOrderId();
         String customerOrderId = orderEntity.getcustomerOrderId();
         String customerId = orderEntity.getCustomerId();
         Date dueDate = orderEntity.getDueDate();
