@@ -38,7 +38,7 @@ public class ProductEntryEntityConverter {
         String model = productEntryEntity.getModel();
         Integer quantity = productEntryEntity.getQuantity();
         Integer price = productEntryEntity.getPrice();
-        String productionTicketId = productEntryEntity.getProductTicket_id();
+        String productionTicketId = productEntryEntity.getProductTicketId();
         return ProductEntry.newBuilder()
                 .setProductEntryId(productEntryId)
                 .setModel(model == null ? "" : model)
