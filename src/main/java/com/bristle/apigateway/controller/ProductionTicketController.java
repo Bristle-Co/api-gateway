@@ -1,12 +1,10 @@
 package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
-import com.bristle.apigateway.model.order.OrderEntity;
-import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.apigateway.model.production_ticket.ProductionTicketEntity;
-import com.bristle.apigateway.service.OrderService;
 import com.bristle.apigateway.service.ProductionTicketService;
 import com.bristle.proto.common.RequestContext;
+import com.bristle.proto.production_ticket.ProductionTicketFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -44,8 +44,8 @@ public class ProductionTicketController {
         this.m_productionTicketService = productionTicketService;
     }
 
-    @PostMapping("/upsertProductionTicket")
-    public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> upsertProductionTicket(
+    @PutMapping
+    public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> updateProductionTicket(
             @RequestBody ProductionTicketEntity ticketEntity,
             HttpServletRequest httpRequest
     ) {
@@ -54,6 +54,23 @@ public class ProductionTicketController {
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
+            if (ticketEntity.getTicketId() == null) {
+                throw new Exception("ticket Id must NOT be null");
+            }
+
+            // check that order exists
+            List<ProductionTicketEntity> existingProductTicket
+                    = m_productionTicketService.getProductionTicket(requestContextBuilder,
+                    0,
+                    1,
+                    ProductionTicketFilter.newBuilder()
+                            .setTicketId(ticketEntity.getTicketId())
+                            .build()
+            );
+            if (existingProductTicket.isEmpty()) {
+                throw new Exception("Ticket with id " + ticketEntity.getTicketId() + "  does not exist");
+            }
+
             ProductionTicketEntity upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketEntity);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -77,7 +94,44 @@ public class ProductionTicketController {
         }
     }
 
-    @DeleteMapping("/deleteProductionTicket")
+    @PostMapping
+    public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> createProductionTicket(
+            @RequestBody ProductionTicketEntity ticketEntity,
+            HttpServletRequest httpRequest
+    ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketEntity.toString());
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            if (ticketEntity.getTicketId() != null) {
+                throw new Exception("Ticket Id must be null");
+            }
+
+            ProductionTicketEntity upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketEntity);
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    upsertedTicket
+            ), HttpStatus.OK);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + "upsertProductionTicket failed. " + exception.getMessage());
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping
     public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> deleteProductionTicket(
             @RequestParam(name = "ticketId", required = true) Integer ticketId,
             HttpServletRequest httpRequest
@@ -111,7 +165,7 @@ public class ProductionTicketController {
         }
     }
 
-    @GetMapping("/getProductionTickets")
+    @GetMapping
     public ResponseEntity<ResponseWrapper<List<ProductionTicketEntity>>> getProductionTickets(
             @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
@@ -162,6 +216,20 @@ public class ProductionTicketController {
                 // make this go to the end of day
                 issuedAtToDateTime = LocalDate.parse(issuedAtTo, yearMonthDateFormatter).atTime(LocalTime.MAX);
             }
+
+            // Construct filter
+            ProductionTicketFilter.Builder filter = ProductionTicketFilter.newBuilder();
+
+            filter.setTicketId(ticketId == null ? Integer.MIN_VALUE : ticketId);
+            filter.setCustomerId(customerId == null ? "" : customerId);
+            filter.setBristleType(bristleType == null ? "" : bristleType);
+            filter.setModel(model == null ? "" : model);
+            filter.setProductName(productName == null ? "" : productName);
+            filter.setDueDateFrom(dueDateFrom == null ? Long.MIN_VALUE : dateFrom.getTime());
+            filter.setDueDateTo(dueDateFrom == null ? Long.MIN_VALUE : dateTo.getTime());
+            filter.setIssuedAtFrom(issuedAtFrom == null ? Long.MIN_VALUE : issuedAtFromDateTime.toEpochSecond(ZoneOffset.UTC));
+            filter.setIssuedAtTo(issuedAtTo == null ? Long.MIN_VALUE : issuedAtToDateTime.toEpochSecond(ZoneOffset.UTC));
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -170,17 +238,9 @@ public class ProductionTicketController {
                     "success",
                     m_productionTicketService.getProductionTicket(
                             requestContextBuilder,
-                            pageIndex,
-                            pageSize,
-                            ticketId,
-                            customerId,
-                            bristleType,
-                            model,
-                            productName,
-                            dateFrom,
-                            dateTo,
-                            issuedAtFromDateTime,
-                            issuedAtToDateTime)
+                            pageIndex == null ? 0 : pageIndex,
+                            pageSize == null ? 20 : pageSize,
+                            filter.build())
             ), HttpStatus.OK);
 
         } catch (ParseException exception) {

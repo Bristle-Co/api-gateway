@@ -74,33 +74,14 @@ public class ProductionTicketService {
     public List<ProductionTicketEntity> getProductionTicket(RequestContext.Builder requestContext,
                                                             Integer pageIndex,
                                                             Integer pageSize,
-                                                            Integer ticketId,
-                                                            String customerId,
-                                                            String bristleType,
-                                                            String model,
-                                                            String productName,
-                                                            Date dueDateFrom,
-                                                            Date dueDateTo,
-                                                            LocalDateTime issuedAtFrom,
-                                                            LocalDateTime issuedAtTo) throws Exception {
+                                                            ProductionTicketFilter filter) throws Exception {
 
-        ProductionTicketFilter.Builder filter = ProductionTicketFilter.newBuilder();
-
-        filter.setTicketId(ticketId == null ? Integer.MIN_VALUE : ticketId);
-        filter.setCustomerId(customerId == null ? "" : customerId);
-        filter.setBristleType(bristleType == null ? "" : bristleType);
-        filter.setModel(model == null ? "" : model);
-        filter.setProductName(productName == null ? "" : productName);
-        filter.setDueDateFrom(dueDateFrom == null ? Long.MIN_VALUE : dueDateFrom.getTime());
-        filter.setDueDateTo(dueDateFrom == null ? Long.MIN_VALUE : dueDateTo.getTime());
-        filter.setIssuedAtFrom(issuedAtFrom == null ? Long.MIN_VALUE : issuedAtFrom.toEpochSecond(ZoneOffset.UTC));
-        filter.setIssuedAtTo(issuedAtTo == null ? Long.MIN_VALUE : issuedAtTo.toEpochSecond(ZoneOffset.UTC));
 
         GetProductionTicketsRequest request = GetProductionTicketsRequest.newBuilder()
                 .setRequestContext(requestContext)
                 .setFilter(filter)
-                .setPageIndex(pageIndex == null ? 0 : pageIndex)
-                .setPageSize(pageSize == null ? 20 : pageSize).build();
+                .setPageIndex(pageIndex)
+                .setPageSize(pageSize).build();
         GetProductionTicketsResponse response = m_ProductionTicketGrpcService.getProductionTickets(request);
 
         if (response.getResponseContext().hasError()) {

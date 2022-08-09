@@ -1,4 +1,4 @@
 [submodule "configuration"]
 	path = configuration
-	url = git@github.com:Bristle-Co/configuration.git
+	url = https://github.com/Bristle-Co/configuration.git
 	ignore = dirty
