@@ -15,7 +15,10 @@ public class ProductionTicketEntityConverter {
     public ProductionTicketEntity protoToEntity(ProductionTicket proto) {
 
         return new ProductionTicketEntity(
-                proto.getTicketId() == Integer.MIN_VALUE ? null : proto.getTicketId(),
+//                no null check for ticketId, orderId and productEntryId needed since they always have to be defined
+                proto.getTicketId(),
+                proto.getOrderId(),
+                proto.getProductEntryId(),
                 proto.getCustomerId().equals("") ? null : proto.getCustomerId(),
                 proto.getDueDate() == Long.MIN_VALUE ? null : Instant.ofEpochMilli(proto.getDueDate()*1000).atZone(ZoneId.of("UTC")).toLocalDate(),
                 proto.getProductName().equals("") ? null : proto.getProductName(),
@@ -47,7 +50,7 @@ public class ProductionTicketEntityConverter {
 
     public ProductionTicket entityToProto(ProductionTicketEntity entity) {
         return ProductionTicket.newBuilder()
-                .setTicketId(entity.getTicketId() == null ? Integer.MIN_VALUE : entity.getTicketId())
+                .setTicketId(entity.getTicketId())
                 .setCustomerId(entity.getCustomerId() == null ? "" : entity.getCustomerId())
                 .setDueDate(entity.getDueDate()==null? Long.MIN_VALUE : entity.getDueDate().atStartOfDay().toEpochSecond(ZoneOffset.UTC))
                 .setProductName(entity.getProductName()==null ? "" : entity.getProductName())
@@ -74,6 +77,9 @@ public class ProductionTicketEntityConverter {
                 .setDonePackagingAt(entity.getDonePackagingAt() == null ? Long.MIN_VALUE : entity.getDonePackagingAt().toEpochSecond(ZoneOffset.UTC))
                 .setPackagedBy(entity.getPackagedBy() == null ? "" : entity.getPackagedBy())
                 .setIssuedAt(entity.getIssuedAt() == null ? Long.MIN_VALUE : entity.getIssuedAt().toEpochSecond(ZoneOffset.UTC))
+//                no null check for order id and product entry id needed since they always have to be defined
+                .setOrderId(entity.getOrderId())
+                .setProductEntryId(entity.getProductEntryId())
                 .build();
     }
 }

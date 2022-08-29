@@ -6,8 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -19,6 +17,8 @@ public class ProductionTicketEntity {
     // I use static final variables instead of enums on purpose
     // so I can reference these strings in annotations
     public static final String TICKET_ID = "ticket_id";
+    public static final String ORDER_ID = "order_id";
+    public static final String PRODUCT_ENTRY_ID = "product_entry_id";
     public static final String CUSTOMER_ID = "customer_id";
     public static final String DUE_DATE = "due_date";
     public static final String PRODUCT_NAME = "product_name";
@@ -50,6 +50,12 @@ public class ProductionTicketEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = TICKET_ID, nullable = false)
     private Integer ticketId;
+
+    @Column(name = ORDER_ID, nullable = false)
+    private Integer orderId;
+
+    @Column(name = PRODUCT_ENTRY_ID, nullable = false)
+    private String productEntryId;
 
     @Column(name = CUSTOMER_ID, nullable = true)
     private String customerId;
@@ -136,8 +142,10 @@ public class ProductionTicketEntity {
 
     public ProductionTicketEntity() {}
 
-    public ProductionTicketEntity(Integer ticketId, String customerId, LocalDate dueDate, String productName, String bristleType, String model, String innerTubeType, Float bristleDiameter, Integer quantity, String alumTubeType, String alumRimType, String modelNote, String productionNote1, String productionNote2, String productionNote3, String productionNote4, String productionNote5, String productionNote6, LocalDateTime donePreparingAt, String preparedBy, LocalDateTime doneTwiningAt, String twinedBy, LocalDateTime doneTrimmingAt, String trimmedBy, LocalDateTime donePackagingAt, String packagedBy, LocalDateTime issuedAt) {
+    public ProductionTicketEntity(Integer ticketId, Integer orderId, String productEntryId, String customerId, LocalDate dueDate, String productName, String bristleType, String model, String innerTubeType, Float bristleDiameter, Integer quantity, String alumTubeType, String alumRimType, String modelNote, String productionNote1, String productionNote2, String productionNote3, String productionNote4, String productionNote5, String productionNote6, LocalDateTime donePreparingAt, String preparedBy, LocalDateTime doneTwiningAt, String twinedBy, LocalDateTime doneTrimmingAt, String trimmedBy, LocalDateTime donePackagingAt, String packagedBy, LocalDateTime issuedAt) {
         this.ticketId = ticketId;
+        this.orderId = orderId;
+        this.productEntryId = productEntryId;
         this.customerId = customerId;
         this.dueDate = dueDate;
         this.productName = productName;
@@ -164,6 +172,22 @@ public class ProductionTicketEntity {
         this.donePackagingAt = donePackagingAt;
         this.packagedBy = packagedBy;
         this.issuedAt = issuedAt;
+    }
+
+    public Integer getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Integer orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getProductEntryId() {
+        return productEntryId;
+    }
+
+    public void setProductEntryId(String productEntryId) {
+        this.productEntryId = productEntryId;
     }
 
     public Integer getTicketId() {
