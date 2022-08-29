@@ -9,10 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 // This class is used for database definition in relational database
@@ -63,9 +61,8 @@ public class OrderEntity {
     // I use java.util.Date + @Temporal
     // because I want to use the constructor that takes epoch long
     @Column(name = COLM_DUE_DATE, nullable = true)
-    @Temporal(TemporalType.DATE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date dueDate;
+    private LocalDate dueDate;
 
     @Column(name = COLM_NOTE, nullable = true)
     private String note;
@@ -90,7 +87,7 @@ public class OrderEntity {
     public OrderEntity(Integer orderId,
                        String customerOrderId,
                        String customerId,
-                       Date dueDate,
+                       LocalDate dueDate,
                        String note,
                        LocalDateTime deliveredAt,
                        LocalDateTime issuedAt,
@@ -133,11 +130,11 @@ public class OrderEntity {
         this.customerId = customerId;
     }
 
-    public Date getDueDate() {
+    public LocalDate getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(Date dueDate) {
+    public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
     }
 
