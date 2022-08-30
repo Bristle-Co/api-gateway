@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,8 @@ public class OrderEntityConverter {
             List<ProductEntryEntity> entityList
                     = orderProto.getProductEntryList().stream().map(proto -> m_productEntryConverter.protoToEntity(proto, result)).collect(Collectors.toList());
             result.setProductEntries(entityList);
+        } else {
+            result.setProductEntries(Collections.emptyList());
         }
 
         return result;
