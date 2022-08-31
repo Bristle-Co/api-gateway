@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class OrderEntityConverter {
+
     private final ProductEntryEntityConverter m_productEntryConverter;
 
     OrderEntityConverter(ProductEntryEntityConverter productEntryConverter) {
@@ -36,13 +37,13 @@ public class OrderEntityConverter {
                 orderId == Integer.MIN_VALUE ? null : orderId,
                 customerOrderId.equals("") ? null : customerOrderId,
                 customerId.equals("") ? null : customerId,
-                dueDate == Long.MIN_VALUE ? null : Instant.ofEpochMilli(dueDate*1000).atZone(ZoneId.of("UTC")).toLocalDate(),
+                dueDate == Long.MIN_VALUE ? null : Instant.ofEpochMilli(dueDate * 1000).atZone(ZoneId.of("UTC")).toLocalDate(),
                 note.equals("") ? null : note,
                 deliveredAt == Long.MIN_VALUE ? null : LocalDateTime.ofEpochSecond(deliveredAt, 0, ZoneOffset.UTC),
                 issuedAt == Long.MIN_VALUE ? null : LocalDateTime.ofEpochSecond(issuedAt, 0, ZoneOffset.UTC)
-                ,null);
+                , null);
 
-        if(orderProto.getProductEntryCount() > 0) {
+        if (orderProto.getProductEntryCount() > 0) {
             List<ProductEntryEntity> entityList
                     = orderProto.getProductEntryList().stream().map(proto -> m_productEntryConverter.protoToEntity(proto, result)).collect(Collectors.toList());
             result.setProductEntries(entityList);
@@ -71,9 +72,15 @@ public class OrderEntityConverter {
                 .setDeliveredAt(deliveredAt == null ? Long.MIN_VALUE : deliveredAt.toEpochSecond(ZoneOffset.UTC))
                 .setIssuedAt(issuedAt == null ? Long.MIN_VALUE : issuedAt.toEpochSecond(ZoneOffset.UTC));
 
-        if(orderEntity.getProductEntries().size() > 0 ){
+        if (orderEntity.getProductEntries().size() > 0) {
             List<ProductEntry> productEntriesList = orderEntity.getProductEntries().stream()
-                    .map(m_productEntryConverter::entityToProto).collect(Collectors.toList());
+                    .map( item -> {
+                        // make sure to initialize the orderId field in productEntry
+                        // since it is not mapped by hiberate
+                        // and this is expected
+                        item.setOrderId(orderEntity.getOrderId());
+                        return m_productEntryConverter.entityToProto(item);
+                    }).collect(Collectors.toList());
             result.addAllProductEntry(productEntriesList);
         }
 

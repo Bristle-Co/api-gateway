@@ -2,6 +2,7 @@ package com.bristle.apigateway.service;
 
 
 import com.bristle.apigateway.converter.order.OrderEntityConverter;
+import com.bristle.apigateway.converter.order.ProductEntryEntityConverter;
 import com.bristle.apigateway.model.order.OrderEntity;
 import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.proto.common.RequestContext;
@@ -10,6 +11,8 @@ import com.bristle.proto.order.DeleteOrderRequest;
 import com.bristle.proto.order.DeleteOrderResponse;
 import com.bristle.proto.order.GetOrdersRequest;
 import com.bristle.proto.order.GetOrdersResponse;
+import com.bristle.proto.order.GetUnAssignedProductEntriesRequest;
+import com.bristle.proto.order.GetUnAssignedProductEntriesResponse;
 import com.bristle.proto.order.Order;
 import com.bristle.proto.order.OrderFilter;
 import com.bristle.proto.order.OrderServiceGrpc;
@@ -36,8 +39,12 @@ public class OrderService {
 
     private final OrderEntityConverter m_orderConverter;
 
-    OrderService(OrderEntityConverter orderConverter) {
+    private final ProductEntryEntityConverter m_productEntryConverter;
+
+    OrderService(OrderEntityConverter orderConverter, ProductEntryEntityConverter productEntryConverter)
+    {
         this.m_orderConverter = orderConverter;
+        this.m_productEntryConverter = productEntryConverter;
     }
 
     public OrderEntity upsertOrder(RequestContext.Builder requestContext, OrderEntity orderEntity) throws Exception {
@@ -102,4 +109,19 @@ public class OrderService {
 
         return m_orderConverter.protoToEntity(response.getDeletedOrder());
     }
+
+//    public List<ProductEntryEntity> getUnAssignedProductEntries(RequestContext.Builder requestContext) throws Exception{
+//        GetUnAssignedProductEntriesRequest request =
+//                GetUnAssignedProductEntriesRequest.newBuilder()
+//                        .setRequestContext(requestContext)
+//                        .build();
+//        GetUnAssignedProductEntriesResponse response
+//                = m_orderGrpcService.getUnAssignedProductEntries(request);
+//
+//        if (response.getResponseContext().hasError()) {
+//            throw new Exception(response.getResponseContext().getError().getErrorMessage());
+//        }
+//
+//        return response.getProductEntryList().stream().map(m_productEntryConverter::protoToEntity).collect(Collectors.toList());
+//    }
 }
