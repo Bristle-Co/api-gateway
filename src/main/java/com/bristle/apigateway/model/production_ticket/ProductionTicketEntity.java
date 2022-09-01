@@ -410,6 +410,8 @@ public class ProductionTicketEntity {
     public String toString() {
         return "ProductionTicketEntity{" +
                 "ticketId=" + ticketId +
+                ", orderId=" + orderId +
+                ", productEntryId='" + productEntryId + '\'' +
                 ", customerId='" + customerId + '\'' +
                 ", dueDate=" + dueDate +
                 ", productName='" + productName + '\'' +

@@ -4,6 +4,7 @@ import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.production_ticket.ProductionTicketEntity;
 import com.bristle.apigateway.service.ProductionTicketService;
 import com.bristle.proto.common.RequestContext;
+import com.bristle.proto.production_ticket.ProductionTicket;
 import com.bristle.proto.production_ticket.ProductionTicketFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +56,10 @@ public class ProductionTicketController {
 
         try {
             if (ticketEntity.getTicketId() == null) {
-                throw new Exception("ticket Id must NOT be null");
+                throw new Exception("ticketId must NOT be null");
             }
+
+            validateInComingProductTicket(ticketEntity);
 
             // check that order exists
             List<ProductionTicketEntity> existingProductTicket
@@ -105,8 +108,9 @@ public class ProductionTicketController {
 
         try {
             if (ticketEntity.getTicketId() != null) {
-                throw new Exception("Ticket Id must be null");
+                throw new Exception("ticketId must be null");
             }
+            validateInComingProductTicket(ticketEntity);
 
             ProductionTicketEntity upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketEntity);
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -263,6 +267,16 @@ public class ProductionTicketController {
                     exception.getMessage()
             ), HttpStatus.INTERNAL_SERVER_ERROR);
 
+        }
+    }
+
+    public void validateInComingProductTicket(ProductionTicketEntity entity) throws Exception{
+        // don't validate ticketId here since this function is reused for update and create endpoint
+        if (entity.getOrderId() == null) {
+            throw new Exception("orderId must NOT be null");
+        }
+        if (entity.getProductEntryId() == null) {
+            throw new Exception("productEntryId must NOT be null");
         }
     }
 }

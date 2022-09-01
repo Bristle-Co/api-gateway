@@ -13,14 +13,13 @@ import java.time.ZoneOffset;
 public class ProductionTicketEntityConverter {
 
     public ProductionTicketEntity protoToEntity(ProductionTicket proto) {
-
         return new ProductionTicketEntity(
-//                no null check for ticketId, orderId and productEntryId needed since they always have to be defined
-                proto.getTicketId(),
+                proto.getTicketId() == Integer.MIN_VALUE ? null : proto.getTicketId(),
+//                no null check for orderId and productEntryId needed since they always have to be defined
                 proto.getOrderId(),
                 proto.getProductEntryId(),
                 proto.getCustomerId().equals("") ? null : proto.getCustomerId(),
-                proto.getDueDate() == Long.MIN_VALUE ? null : Instant.ofEpochMilli(proto.getDueDate()*1000).atZone(ZoneId.of("UTC")).toLocalDate(),
+                proto.getDueDate() == Long.MIN_VALUE ? null : Instant.ofEpochMilli(proto.getDueDate() * 1000).atZone(ZoneId.of("UTC")).toLocalDate(),
                 proto.getProductName().equals("") ? null : proto.getProductName(),
                 proto.getBristleType().equals("") ? null : proto.getBristleType(),
                 proto.getModel().equals("") ? null : proto.getModel(),
@@ -49,18 +48,19 @@ public class ProductionTicketEntityConverter {
     }
 
     public ProductionTicket entityToProto(ProductionTicketEntity entity) {
+
         return ProductionTicket.newBuilder()
-                .setTicketId(entity.getTicketId())
+                .setTicketId(entity.getTicketId() == null ? Integer.MIN_VALUE : entity.getTicketId())
                 .setCustomerId(entity.getCustomerId() == null ? "" : entity.getCustomerId())
-                .setDueDate(entity.getDueDate()==null? Long.MIN_VALUE : entity.getDueDate().atStartOfDay().toEpochSecond(ZoneOffset.UTC))
-                .setProductName(entity.getProductName()==null ? "" : entity.getProductName())
-                .setBristleType(entity.getBristleType() == null?"": entity.getBristleType())
-                .setModel(entity.getModel()==null?"":entity.getModel())
-                .setInnerTubeType(entity.getInnerTubeType() == null?"":entity.getInnerTubeType())
-                .setBristleDiameter(entity.getBristleDiameter() == null? Float.MIN_VALUE : entity.getBristleDiameter())
+                .setDueDate(entity.getDueDate() == null ? Long.MIN_VALUE : entity.getDueDate().atStartOfDay().toEpochSecond(ZoneOffset.UTC))
+                .setProductName(entity.getProductName() == null ? "" : entity.getProductName())
+                .setBristleType(entity.getBristleType() == null ? "" : entity.getBristleType())
+                .setModel(entity.getModel() == null ? "" : entity.getModel())
+                .setInnerTubeType(entity.getInnerTubeType() == null ? "" : entity.getInnerTubeType())
+                .setBristleDiameter(entity.getBristleDiameter() == null ? Float.MIN_VALUE : entity.getBristleDiameter())
                 .setQuantity(entity.getQuantity() == null ? Integer.MIN_VALUE : entity.getQuantity())
-                .setAlumTubeType(entity.getAlumTubeType() == null?"":entity.getAlumTubeType())
-                .setAlumRimType(entity.getAlumRimType() == null ? "":entity.getAlumRimType())
+                .setAlumTubeType(entity.getAlumTubeType() == null ? "" : entity.getAlumTubeType())
+                .setAlumRimType(entity.getAlumRimType() == null ? "" : entity.getAlumRimType())
                 .setModelNote(entity.getModelNote() == null ? "" : entity.getModelNote())
                 .setProductionNote1(entity.getProductionNote1() == null ? "" : entity.getProductionNote1())
                 .setProductionNote2(entity.getProductionNote2() == null ? "" : entity.getProductionNote2())
@@ -69,11 +69,11 @@ public class ProductionTicketEntityConverter {
                 .setProductionNote5(entity.getProductionNote5() == null ? "" : entity.getProductionNote5())
                 .setProductionNote6(entity.getProductionNote6() == null ? "" : entity.getProductionNote6())
                 .setDonePreparingAt(entity.getDonePreparingAt() == null ? Long.MIN_VALUE : entity.getDonePreparingAt().toEpochSecond(ZoneOffset.UTC))
-                .setPreparedBy(entity.getPreparedBy() == null ? "":entity.getPreparedBy())
+                .setPreparedBy(entity.getPreparedBy() == null ? "" : entity.getPreparedBy())
                 .setDoneTwiningAt(entity.getDoneTwiningAt() == null ? Long.MIN_VALUE : entity.getDoneTwiningAt().toEpochSecond(ZoneOffset.UTC))
-                .setTwinedBy(entity.getTwinedBy() == null ? "":entity.getTwinedBy())
+                .setTwinedBy(entity.getTwinedBy() == null ? "" : entity.getTwinedBy())
                 .setDoneTrimmingAt(entity.getDoneTrimmingAt() == null ? Long.MIN_VALUE : entity.getDoneTrimmingAt().toEpochSecond(ZoneOffset.UTC))
-                .setTrimmedBy(entity.getTrimmedBy() == null ? "":entity.getTrimmedBy())
+                .setTrimmedBy(entity.getTrimmedBy() == null ? "" : entity.getTrimmedBy())
                 .setDonePackagingAt(entity.getDonePackagingAt() == null ? Long.MIN_VALUE : entity.getDonePackagingAt().toEpochSecond(ZoneOffset.UTC))
                 .setPackagedBy(entity.getPackagedBy() == null ? "" : entity.getPackagedBy())
                 .setIssuedAt(entity.getIssuedAt() == null ? Long.MIN_VALUE : entity.getIssuedAt().toEpochSecond(ZoneOffset.UTC))
