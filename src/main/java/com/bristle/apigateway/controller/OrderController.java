@@ -3,11 +3,14 @@ package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.customer_detail.CustomerEntity;
+import com.bristle.apigateway.model.dto.order.OrderDto;
+import com.bristle.apigateway.model.dto.order.ProductEntryDto;
 import com.bristle.apigateway.model.order.OrderEntity;
 import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.apigateway.service.OrderService;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.order.OrderFilter;
+import com.bristle.proto.order.ProductEntry;
 import org.hibernate.internal.CriteriaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,20 +54,18 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper<OrderEntity>> createOrder(
-            @RequestBody OrderEntity orderEntity,
+    public ResponseEntity<ResponseWrapper<OrderDto>> createOrder(
+            @RequestBody OrderDto orderDto,
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "createOrder request received. \n" + orderEntity.toString() + " ProductEntryList: " +
-                orderEntity.getProductEntries().stream().map(ProductEntryEntity::toString));
+        log.info("Request id: " + requestId + "createOrder request received. \n" + orderDto.toString() + " ProductEntryList: " +
+                orderDto.getProductEntries().stream().map(ProductEntryDto::toString));
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (orderEntity.getOrderId() != null) {
-                throw new Exception("Order Id must be null");
-            }
+            validateToBeCreatedOrder(orderDto);
 
-            OrderEntity upsertedOrder = m_orderService.upsertOrder(requestContextBuilder, orderEntity);
+            OrderDto upsertedOrder = m_orderService.upsertOrder(requestContextBuilder, orderDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -76,6 +77,7 @@ public class OrderController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "upsertOrder failed. " + exception.getMessage());
+            exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -88,29 +90,31 @@ public class OrderController {
     }
 
     @PutMapping
-    public ResponseEntity<ResponseWrapper<OrderEntity>> updateOrder(
-            @RequestBody OrderEntity orderEntity,
+    public ResponseEntity<ResponseWrapper<OrderDto>> updateOrder(
+            @RequestBody OrderDto orderDto,
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertOrder request received. \n" + orderEntity.toString() + " ProductEntryList: " +
-                orderEntity.getProductEntries().stream().map(ProductEntryEntity::toString));
+        log.info("Request id: " + requestId + "upsertOrder request received. \n" + orderDto.toString() + " ProductEntryList: " +
+                orderDto.getProductEntries().stream().map(ProductEntryDto::toString));
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
+            validateToBeUpdatedOrder(orderDto);
+
             // check that order exists
-            List<OrderEntity> existingOrderList
+            List<OrderDto> existingOrderList
                     = m_orderService.getOrders(requestContextBuilder,
                     0,
                     1,
                     OrderFilter.newBuilder()
-                            .setOrderId(orderEntity.getOrderId())
+                            .setOrderId(orderDto.getOrderId())
                             .build()
             );
             if (existingOrderList.isEmpty()) {
-                throw new Exception("Order with id " + orderEntity.getOrderId() + "  does not exist");
+                throw new Exception("Order with id " + orderDto.getOrderId() + "  does not exist");
             }
 
-            OrderEntity upsertedOrder = m_orderService.upsertOrder(requestContextBuilder, orderEntity);
+            OrderDto upsertedOrder = m_orderService.upsertOrder(requestContextBuilder, orderDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -122,6 +126,7 @@ public class OrderController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "upsertOrder failed. " + exception.getMessage());
+            exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -134,7 +139,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<List<OrderEntity>>> getOrders(
+    public ResponseEntity<ResponseWrapper<List<OrderDto>>> getOrders(
             @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "orderId", required = false) Integer orderId,
@@ -187,13 +192,13 @@ public class OrderController {
             // params are verified in controller layer, only need to do null check here
             OrderFilter.Builder filter = OrderFilter.newBuilder();
 
-            filter.setOrderId(orderId==null ? Integer.MIN_VALUE : orderId);
-            filter.setCustomerOrderId(customerOrderId==null ? "" :customerOrderId);
-            filter.setCustomerId(customerId== null?"":customerId);
-            filter.setDueDateFrom(dueDateFrom == null? Long.MIN_VALUE : dateFrom.getTime());
-            filter.setDueDateTo(dueDateFrom == null? Long.MIN_VALUE : dateTo.getTime());
-            filter.setIssuedAtFrom(issuedAtFrom == null?Long.MIN_VALUE : issuedAtFromDateTime.toEpochSecond(ZoneOffset.UTC));
-            filter.setIssuedAtTo(issuedAtTo == null?Long.MIN_VALUE : issuedAtToDateTime.toEpochSecond(ZoneOffset.UTC));
+            filter.setOrderId(orderId == null ? Integer.MIN_VALUE : orderId);
+            filter.setCustomerOrderId(customerOrderId == null ? "" : customerOrderId);
+            filter.setCustomerId(customerId == null ? "" : customerId);
+            filter.setDueDateFrom(dueDateFrom == null ? Long.MIN_VALUE : dateFrom.getTime());
+            filter.setDueDateTo(dueDateFrom == null ? Long.MIN_VALUE : dateTo.getTime());
+            filter.setIssuedAtFrom(issuedAtFrom == null ? Long.MIN_VALUE : issuedAtFromDateTime.toEpochSecond(ZoneOffset.UTC));
+            filter.setIssuedAtTo(issuedAtTo == null ? Long.MIN_VALUE : issuedAtToDateTime.toEpochSecond(ZoneOffset.UTC));
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -210,6 +215,8 @@ public class OrderController {
 
         } catch (ParseException exception) {
             log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -220,6 +227,8 @@ public class OrderController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -232,7 +241,7 @@ public class OrderController {
     }
 
     @DeleteMapping
-    public ResponseEntity<ResponseWrapper<OrderEntity>> deleteOrder(
+    public ResponseEntity<ResponseWrapper<OrderDto>> deleteOrder(
             @RequestParam(name = "orderId", required = true) Integer orderId,
             HttpServletRequest httpRequest
     ) {
@@ -244,7 +253,7 @@ public class OrderController {
             if (orderId <= 0) throw new IllegalArgumentException("orderId must > 0");
 
             // check that order exists
-            List<OrderEntity> existingOrderList
+            List<OrderDto> existingOrderList
                     = m_orderService.getOrders(requestContextBuilder,
                     0,
                     1,
@@ -267,6 +276,8 @@ public class OrderController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -275,6 +286,38 @@ public class OrderController {
                     exception.getMessage()
             ), HttpStatus.INTERNAL_SERVER_ERROR);
 
+        }
+    }
+
+    private void validateToBeCreatedOrder(OrderDto dto) throws Exception {
+        if (dto.getOrderId() != null) {
+            // orderId is assigned by db
+            throw new Exception("orderId must be null when creating order");
+        }
+
+        if (dto.getIssuedAt() != null) {
+            // a newly created order must let server log current timestamp
+            throw new Exception("issuedAt must be null when creating order");
+        }
+
+        List<ProductEntryDto> productEntryEntities = dto.getProductEntries();
+        for (int i = 0; i < productEntryEntities.size(); i++) {
+            if (productEntryEntities.get(i).getOrderId() != null) {
+                throw new Exception("orderId in product entry must be null when creating order, index " + i);
+            }
+        }
+    }
+
+    private void validateToBeUpdatedOrder(OrderDto dto) throws Exception {
+        if (dto.getOrderId() == null) {
+            throw new Exception("orderId must NOT be null");
+        }
+
+        List<ProductEntryDto> productEntryDtos = dto.getProductEntries();
+        for (int i = 0; i < productEntryDtos.size(); i++) {
+            if (dto.getOrderId().equals(productEntryDtos.get(i).getOrderId())) {
+                throw new Exception("orderId in ProductEntry must match parent order's id, fail at ProductEntry index " + i);
+            }
         }
     }
 }

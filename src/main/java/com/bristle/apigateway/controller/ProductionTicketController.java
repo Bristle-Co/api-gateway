@@ -124,6 +124,7 @@ public class ProductionTicketController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "upsertProductionTicket failed. " + exception.getMessage());
+            exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -158,6 +159,8 @@ public class ProductionTicketController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "deleteProdctionTicket failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -249,6 +252,8 @@ public class ProductionTicketController {
 
         } catch (ParseException exception) {
             log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -259,6 +264,8 @@ public class ProductionTicketController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),

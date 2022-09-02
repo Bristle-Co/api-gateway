@@ -79,6 +79,7 @@ public class CustomerDetailController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -124,6 +125,7 @@ public class CustomerDetailController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -169,6 +171,7 @@ public class CustomerDetailController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -210,14 +213,14 @@ public class CustomerDetailController {
                     "success",
                     deletedCustomer
             ), HttpStatus.OK);
-        } catch (Exception e) {
-
+        } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    e.getMessage()
+                    exception.getMessage()
             ), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

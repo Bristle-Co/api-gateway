@@ -54,6 +54,8 @@ public class UserController {
 
         } catch (Exception exception) {
             log.error("Request id: " + requestId + "getUsers failed. " + exception.getMessage());
+            exception.printStackTrace();
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
