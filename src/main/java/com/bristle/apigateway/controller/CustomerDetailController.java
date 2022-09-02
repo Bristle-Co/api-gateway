@@ -1,6 +1,5 @@
 package com.bristle.apigateway.controller;
 
-import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.dto.customer_detail.CustomerDto;
 import com.bristle.apigateway.service.CustomerDetailService;

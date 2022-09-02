@@ -1,12 +1,8 @@
 package com.bristle.apigateway.service;
 
-import com.bristle.apigateway.converter.production_ticket.ProductionTicketEntityConverter;
 import com.bristle.apigateway.converter.user.UserEntityConverter;
-import com.bristle.apigateway.model.user.UserEntity;
+import com.bristle.apigateway.model.dto.user.UserDto;
 import com.bristle.proto.common.RequestContext;
-import com.bristle.proto.production_ticket.GetProductionTicketsRequest;
-import com.bristle.proto.production_ticket.GetProductionTicketsResponse;
-import com.bristle.proto.production_ticket.ProductionTicketServiceGrpc;
 import com.bristle.proto.user.GetUsersRequest;
 import com.bristle.proto.user.GetUsersResponse;
 import com.bristle.proto.user.UserServiceGrpc;
@@ -32,7 +28,7 @@ public class UserService {
         this.m_converter = m_converter;
     }
 
-    public List<UserEntity> getUsers(RequestContext.Builder requestContext) throws Exception{
+    public List<UserDto> getUsers(RequestContext.Builder requestContext) throws Exception{
         GetUsersRequest request = GetUsersRequest.newBuilder()
                 .setRequestContext(requestContext)
                 .build();
@@ -43,6 +39,6 @@ public class UserService {
         }
 
         return response.getUserList().stream()
-                .map(m_converter::protoToEntity).collect(Collectors.toList());
+                .map(m_converter::protoToDto).collect(Collectors.toList());
     }
 }

@@ -1,5 +1,6 @@
 package com.bristle.apigateway.converter.user;
 
+import com.bristle.apigateway.model.dto.user.UserDto;
 import com.bristle.apigateway.model.user.UserEntity;
 import com.bristle.proto.user.User;
 import org.springframework.stereotype.Component;
@@ -7,14 +8,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserEntityConverter {
 
-    public User entityToProto(UserEntity entity) {
+    public User dtoToProto(UserDto dto) {
         return User.newBuilder()
-                .setId(entity.getUserId())
-                .setName(entity.getName())
+                .setId(dto.getUserId())
+                .setName(dto.getName())
                 .build();
     }
 
-    public UserEntity protoToEntity(User proto) {
-        return new UserEntity(proto.getId(), proto.getName());
+    public UserDto protoToDto(User proto) {
+        return new UserDto(proto.getId(), proto.getName());
     }
 }

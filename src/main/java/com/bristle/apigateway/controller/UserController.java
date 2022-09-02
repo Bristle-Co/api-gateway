@@ -1,12 +1,9 @@
 package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
-import com.bristle.apigateway.model.production_ticket.ProductionTicketEntity;
-import com.bristle.apigateway.model.user.UserEntity;
-import com.bristle.apigateway.service.ProductionTicketService;
+import com.bristle.apigateway.model.dto.user.UserDto;
 import com.bristle.apigateway.service.UserService;
 import com.bristle.proto.common.RequestContext;
-import com.bristle.proto.production_ticket.ProductionTicketFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -35,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<List<UserEntity>>> getUsers(
+    public ResponseEntity<ResponseWrapper<List<UserDto>>> getUsers(
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();

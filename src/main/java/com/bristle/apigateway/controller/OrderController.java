@@ -2,19 +2,13 @@ package com.bristle.apigateway.controller;
 
 
 import com.bristle.apigateway.model.ResponseWrapper;
-import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.apigateway.model.dto.order.OrderDto;
 import com.bristle.apigateway.model.dto.order.ProductEntryDto;
-import com.bristle.apigateway.model.order.OrderEntity;
-import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.apigateway.service.OrderService;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.order.OrderFilter;
-import com.bristle.proto.order.ProductEntry;
-import org.hibernate.internal.CriteriaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
