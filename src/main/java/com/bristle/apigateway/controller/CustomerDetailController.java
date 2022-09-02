@@ -2,6 +2,7 @@ package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.customer_detail.CustomerEntity;
 import com.bristle.apigateway.model.ResponseWrapper;
+import com.bristle.apigateway.model.dto.customer_detail.CustomerDto;
 import com.bristle.apigateway.service.CustomerDetailService;
 import com.bristle.proto.common.RequestContext;
 
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 // must have @CrossOrigin else browser can't receive any payload
@@ -39,20 +41,22 @@ public class CustomerDetailController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<List<CustomerEntity>>> getCustomers(
+    public ResponseEntity<ResponseWrapper<List<CustomerDto>>> getCustomers(
             @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "customerId", required = false) String customerId,
+            @RequestParam(name = "matchingCustomerId", required = false) String matchingCustomerId,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "contactName", required = false) String contactName,
             @RequestParam(name = "contactNumber", required = false) String contactNumber,
             @RequestParam(name = "address", required = false) String address,
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "getAllCustomers request received. pageIndex: "+ pageIndex
-                + ", pageSize: "+ pageSize + ", customerId: "+ customerId + ", name: "+ name
-                + ", contactName: "+ contactName + ", contactNumber: "+ contactNumber
-                + ", address: "+ address);
+        log.info("Request id: " + requestId + "getAllCustomers request received. pageIndex: " + pageIndex
+                + ", pageSize: " + pageSize + ", customerId: " + customerId + ", matchingCustomerId: "
+                + matchingCustomerId + ", name: " + name
+                + ", contactName: " + contactName + ", contactNumber: " + contactNumber
+                + ", address: " + address);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         // construct filter
@@ -62,10 +66,11 @@ public class CustomerDetailController {
                 .setContactName(contactName == null ? "" : contactName)
                 .setContactNumber(contactNumber == null ? "" : contactNumber)
                 .setAddress(address == null ? "" : address)
+                .setMatchingCustomerId(matchingCustomerId == null ? "" : matchingCustomerId)
                 .build();
 
         try {
-            List<CustomerEntity> resultList = m_customerDetailService.getCustomers(requestContextBuilder,
+            List<CustomerDto> resultList = m_customerDetailService.getCustomers(requestContextBuilder,
                     filter,
                     pageSize == null ? 20 : pageSize,
                     pageIndex == null ? 0 : pageIndex);
@@ -91,30 +96,26 @@ public class CustomerDetailController {
     }
 
     @PutMapping
-    public ResponseEntity<ResponseWrapper<CustomerEntity>> updateCustomer(
-            @RequestBody CustomerEntity customerEntity,
+    public ResponseEntity<ResponseWrapper<CustomerDto>> updateCustomer(
+            @RequestBody CustomerDto customerDto,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "updateCustomer request received. \n" + customerEntity.toString());
+        log.info("Request id: " + requestId + "updateCustomer request received. \n" + customerDto.toString());
         RequestContext.Builder requestContext = RequestContext.newBuilder();
         requestContext.setRequestId(requestId);
 
         try {
-            if (customerEntity.getCustomerId().equals("")) {
+            if (customerDto.getCustomerId().equals("")) {
                 throw new Exception("customer id can't be empty");
             }
             // get customer by id to make sure customer exists
-            List<CustomerEntity> existingCustomer =
-                    m_customerDetailService.getCustomers(requestContext,
-                            CustomerFilter.newBuilder()
-                                    .setCustomerId(customerEntity.getCustomerId()).build(),
-                            1,
-                            0);
-            if (existingCustomer.isEmpty()) {
-                throw new Exception("Customer with id " + customerEntity.getCustomerId() + "  does not exist");
+            Optional<CustomerDto> existingCustomer =
+                    m_customerDetailService.getCustomerById(requestContext, customerDto.getCustomerId());
+            if (!existingCustomer.isPresent()) {
+                throw new Exception("Customer with id " + customerDto.getCustomerId() + "  does not exist");
             }
-            CustomerEntity editedCustomer = m_customerDetailService.upsertCustomer(requestContext, customerEntity);
+            CustomerDto editedCustomer = m_customerDetailService.upsertCustomer(requestContext, customerDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -137,30 +138,27 @@ public class CustomerDetailController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper<CustomerEntity>> createCustomer(
-            @RequestBody CustomerEntity customerEntity,
+    public ResponseEntity<ResponseWrapper<CustomerDto>> createCustomer(
+            @RequestBody CustomerDto customerDto,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "createCustomer request received. \n" + customerEntity.toString());
+        log.info("Request id: " + requestId + "createCustomer request received. \n" + customerDto.toString());
         RequestContext.Builder requestContext = RequestContext.newBuilder();
         requestContext.setRequestId(requestId);
 
         try {
-            if (customerEntity.getCustomerId().equals("")) {
+            if (customerDto.getCustomerId().equals("")) {
                 throw new Exception("customer id can't be empty");
             }
             // get customer by id to make sure customer does not exists
-            List<CustomerEntity> existingCustomer =
-                    m_customerDetailService.getCustomers(requestContext,
-                            CustomerFilter.newBuilder()
-                                    .setCustomerId(customerEntity.getCustomerId()).build(),
-                            1,
-                            0);
-            if (!existingCustomer.isEmpty()) {
-                throw new Exception("Customer with id" + customerEntity.getCustomerId() + " already exist");
+            // we're not getting customer by id and check if one already exist since
+            Optional<CustomerDto> existingCustomer =
+                    m_customerDetailService.getCustomerById(requestContext, customerDto.getCustomerId());
+            if (existingCustomer.isPresent()) {
+                throw new Exception("Customer with id" + customerDto.getCustomerId() + " already exist");
             }
-            CustomerEntity addedCustomer = m_customerDetailService.upsertCustomer(requestContext, customerEntity);
+            CustomerDto addedCustomer = m_customerDetailService.upsertCustomer(requestContext, customerDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -183,7 +181,7 @@ public class CustomerDetailController {
     }
 
     @DeleteMapping
-    public ResponseEntity<ResponseWrapper<CustomerEntity>> deleteCustomer(
+    public ResponseEntity<ResponseWrapper<CustomerDto>> deleteCustomer(
             @RequestParam(name = "customerId", required = true) String customerId,
             HttpServletRequest httpRequest) {
 
@@ -193,7 +191,7 @@ public class CustomerDetailController {
         requestContext.setRequestId(requestId);
 
         try {
-            CustomerEntity deletedCustomer = m_customerDetailService.deleteCustomerById(requestContext, customerId);
+            CustomerDto deletedCustomer = m_customerDetailService.deleteCustomerById(requestContext, customerId);
             if (deletedCustomer == null) {
                 return new ResponseEntity<>(new ResponseWrapper<>(
                         LocalDateTime.now(),
