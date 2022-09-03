@@ -283,6 +283,39 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/unassigned_product_entry")
+    public ResponseEntity<ResponseWrapper<List<ProductEntryDto>>> getUnAssignedProductEntries(
+            HttpServletRequest httpRequest
+    ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + "getUnAssignedProductEntries request received.");
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    m_orderService.getUnAssignedProductEntries(requestContextBuilder)
+            ), HttpStatus.OK);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + "getUnAssignedProductEntries failed. " + exception.getMessage());
+            exception.printStackTrace();
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
+
     private void validateToBeCreatedOrder(OrderDto dto) throws Exception {
         if (dto.getOrderId() != null) {
             // orderId is assigned by db

@@ -5,12 +5,13 @@ import com.bristle.apigateway.converter.order.OrderConverter;
 import com.bristle.apigateway.converter.order.ProductEntryConverter;
 import com.bristle.apigateway.model.dto.order.OrderDto;
 import com.bristle.apigateway.model.dto.order.ProductEntryDto;
-import com.bristle.apigateway.model.order.OrderEntity;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.order.DeleteOrderRequest;
 import com.bristle.proto.order.DeleteOrderResponse;
 import com.bristle.proto.order.GetOrdersRequest;
 import com.bristle.proto.order.GetOrdersResponse;
+import com.bristle.proto.order.GetUnAssignedProductEntriesRequest;
+import com.bristle.proto.order.GetUnAssignedProductEntriesResponse;
 import com.bristle.proto.order.OrderFilter;
 import com.bristle.proto.order.OrderServiceGrpc;
 import com.bristle.proto.order.UpsertOrderRequest;
@@ -105,18 +106,18 @@ public class OrderService {
         return m_orderConverter.protoToDto(response.getDeletedOrder());
     }
 
-//    public List<ProductEntryEntity> getUnAssignedProductEntries(RequestContext.Builder requestContext) throws Exception{
-//        GetUnAssignedProductEntriesRequest request =
-//                GetUnAssignedProductEntriesRequest.newBuilder()
-//                        .setRequestContext(requestContext)
-//                        .build();
-//        GetUnAssignedProductEntriesResponse response
-//                = m_orderGrpcService.getUnAssignedProductEntries(request);
-//
-//        if (response.getResponseContext().hasError()) {
-//            throw new Exception(response.getResponseContext().getError().getErrorMessage());
-//        }
-//
-//        return response.getProductEntryList().stream().map(m_productEntryConverter::protoToEntity).collect(Collectors.toList());
-//    }
+    public List<ProductEntryDto> getUnAssignedProductEntries(RequestContext.Builder requestContext) throws Exception{
+        GetUnAssignedProductEntriesRequest request =
+                GetUnAssignedProductEntriesRequest.newBuilder()
+                        .setRequestContext(requestContext)
+                        .build();
+        GetUnAssignedProductEntriesResponse response
+                = m_orderGrpcService.getUnAssignedProductEntries(request);
+
+        if (response.getResponseContext().hasError()) {
+            throw new Exception(response.getResponseContext().getError().getErrorMessage());
+        }
+
+        return response.getProductEntryList().stream().map(m_productEntryConverter::protoToDto).collect(Collectors.toList());
+    }
 }

@@ -3,13 +3,28 @@ package com.bristle.apigateway.converter.order;
 
 import com.bristle.apigateway.model.dto.order.OrderDto;
 import com.bristle.apigateway.model.dto.order.ProductEntryDto;
-import com.bristle.apigateway.model.order.OrderEntity;
-import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.proto.order.ProductEntry;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductEntryConverter {
+
+    public ProductEntryDto protoToDto(ProductEntry productEntryProto) {
+        // this conversion is used when productEntry is fetched from db alone
+        // without attaching to an order
+
+        return new ProductEntryDto(
+                productEntryProto.getProductEntryId(),
+                productEntryProto.getModel().equals("") ? null : productEntryProto.getModel(),
+                // protobuf3 numeric type default value is 0
+                // but there might be times where we actually want to 0 for special cases and store it in db
+                // thus we define -2,147,483,648 ( 0x80000000 ) to be null
+                productEntryProto.getQuantity() == Integer.MIN_VALUE ? null : productEntryProto.getQuantity(),
+                productEntryProto.getPrice() == Integer.MIN_VALUE ? null : productEntryProto.getPrice(),
+                productEntryProto.getProductTicketId().equals("") ? null : productEntryProto.getProductTicketId(),
+                productEntryProto.getOrderId() == Integer.MIN_VALUE ? null : productEntryProto.getOrderId()
+        );
+    }
 
     public ProductEntryDto protoToDto(ProductEntry productEntryProto, OrderDto orderEntity) {
         // whenever we load proto back to entity we need to make sure
