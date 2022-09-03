@@ -1,6 +1,6 @@
 package com.bristle.apigateway.converter.production_ticket;
 
-import com.bristle.apigateway.model.production_ticket.ProductionTicketEntity;
+import com.bristle.apigateway.model.dto.production_ticket.ProductionTicketDto;
 import com.bristle.proto.production_ticket.ProductionTicket;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +12,8 @@ import java.time.ZoneOffset;
 @Component
 public class ProductionTicketEntityConverter {
 
-    public ProductionTicketEntity protoToEntity(ProductionTicket proto) {
-        return new ProductionTicketEntity(
+    public ProductionTicketDto protoToDto(ProductionTicket proto) {
+        return new ProductionTicketDto(
                 proto.getTicketId() == Integer.MIN_VALUE ? null : proto.getTicketId(),
 //                no null check for orderId and productEntryId needed since they always have to be defined
                 proto.getOrderId(),
@@ -47,39 +47,39 @@ public class ProductionTicketEntityConverter {
         );
     }
 
-    public ProductionTicket entityToProto(ProductionTicketEntity entity) {
+    public ProductionTicket dtoToProto(ProductionTicketDto dto) {
 
         return ProductionTicket.newBuilder()
-                .setTicketId(entity.getTicketId() == null ? Integer.MIN_VALUE : entity.getTicketId())
-                .setCustomerId(entity.getCustomerId() == null ? "" : entity.getCustomerId())
-                .setDueDate(entity.getDueDate() == null ? Long.MIN_VALUE : entity.getDueDate().atStartOfDay().toEpochSecond(ZoneOffset.UTC))
-                .setProductName(entity.getProductName() == null ? "" : entity.getProductName())
-                .setBristleType(entity.getBristleType() == null ? "" : entity.getBristleType())
-                .setModel(entity.getModel() == null ? "" : entity.getModel())
-                .setInnerTubeType(entity.getInnerTubeType() == null ? "" : entity.getInnerTubeType())
-                .setBristleDiameter(entity.getBristleDiameter() == null ? Float.MIN_VALUE : entity.getBristleDiameter())
-                .setQuantity(entity.getQuantity() == null ? Integer.MIN_VALUE : entity.getQuantity())
-                .setAlumTubeType(entity.getAlumTubeType() == null ? "" : entity.getAlumTubeType())
-                .setAlumRimType(entity.getAlumRimType() == null ? "" : entity.getAlumRimType())
-                .setModelNote(entity.getModelNote() == null ? "" : entity.getModelNote())
-                .setProductionNote1(entity.getProductionNote1() == null ? "" : entity.getProductionNote1())
-                .setProductionNote2(entity.getProductionNote2() == null ? "" : entity.getProductionNote2())
-                .setProductionNote3(entity.getProductionNote3() == null ? "" : entity.getProductionNote3())
-                .setProductionNote4(entity.getProductionNote4() == null ? "" : entity.getProductionNote4())
-                .setProductionNote5(entity.getProductionNote5() == null ? "" : entity.getProductionNote5())
-                .setProductionNote6(entity.getProductionNote6() == null ? "" : entity.getProductionNote6())
-                .setDonePreparingAt(entity.getDonePreparingAt() == null ? Long.MIN_VALUE : entity.getDonePreparingAt().toEpochSecond(ZoneOffset.UTC))
-                .setPreparedBy(entity.getPreparedBy() == null ? "" : entity.getPreparedBy())
-                .setDoneTwiningAt(entity.getDoneTwiningAt() == null ? Long.MIN_VALUE : entity.getDoneTwiningAt().toEpochSecond(ZoneOffset.UTC))
-                .setTwinedBy(entity.getTwinedBy() == null ? "" : entity.getTwinedBy())
-                .setDoneTrimmingAt(entity.getDoneTrimmingAt() == null ? Long.MIN_VALUE : entity.getDoneTrimmingAt().toEpochSecond(ZoneOffset.UTC))
-                .setTrimmedBy(entity.getTrimmedBy() == null ? "" : entity.getTrimmedBy())
-                .setDonePackagingAt(entity.getDonePackagingAt() == null ? Long.MIN_VALUE : entity.getDonePackagingAt().toEpochSecond(ZoneOffset.UTC))
-                .setPackagedBy(entity.getPackagedBy() == null ? "" : entity.getPackagedBy())
-                .setIssuedAt(entity.getIssuedAt() == null ? Long.MIN_VALUE : entity.getIssuedAt().toEpochSecond(ZoneOffset.UTC))
+                .setTicketId(dto.getTicketId() == null ? Integer.MIN_VALUE : dto.getTicketId())
+                .setCustomerId(dto.getCustomerId() == null ? "" : dto.getCustomerId())
+                .setDueDate(dto.getDueDate() == null ? Long.MIN_VALUE : dto.getDueDate().atStartOfDay().toEpochSecond(ZoneOffset.UTC))
+                .setProductName(dto.getProductName() == null ? "" : dto.getProductName())
+                .setBristleType(dto.getBristleType() == null ? "" : dto.getBristleType())
+                .setModel(dto.getModel() == null ? "" : dto.getModel())
+                .setInnerTubeType(dto.getInnerTubeType() == null ? "" : dto.getInnerTubeType())
+                .setBristleDiameter(dto.getBristleDiameter() == null ? Float.MIN_VALUE : dto.getBristleDiameter())
+                .setQuantity(dto.getQuantity() == null ? Integer.MIN_VALUE : dto.getQuantity())
+                .setAlumTubeType(dto.getAlumTubeType() == null ? "" : dto.getAlumTubeType())
+                .setAlumRimType(dto.getAlumRimType() == null ? "" : dto.getAlumRimType())
+                .setModelNote(dto.getModelNote() == null ? "" : dto.getModelNote())
+                .setProductionNote1(dto.getProductionNote1() == null ? "" : dto.getProductionNote1())
+                .setProductionNote2(dto.getProductionNote2() == null ? "" : dto.getProductionNote2())
+                .setProductionNote3(dto.getProductionNote3() == null ? "" : dto.getProductionNote3())
+                .setProductionNote4(dto.getProductionNote4() == null ? "" : dto.getProductionNote4())
+                .setProductionNote5(dto.getProductionNote5() == null ? "" : dto.getProductionNote5())
+                .setProductionNote6(dto.getProductionNote6() == null ? "" : dto.getProductionNote6())
+                .setDonePreparingAt(dto.getDonePreparingAt() == null ? Long.MIN_VALUE : dto.getDonePreparingAt().toEpochSecond(ZoneOffset.UTC))
+                .setPreparedBy(dto.getPreparedBy() == null ? "" : dto.getPreparedBy())
+                .setDoneTwiningAt(dto.getDoneTwiningAt() == null ? Long.MIN_VALUE : dto.getDoneTwiningAt().toEpochSecond(ZoneOffset.UTC))
+                .setTwinedBy(dto.getTwinedBy() == null ? "" : dto.getTwinedBy())
+                .setDoneTrimmingAt(dto.getDoneTrimmingAt() == null ? Long.MIN_VALUE : dto.getDoneTrimmingAt().toEpochSecond(ZoneOffset.UTC))
+                .setTrimmedBy(dto.getTrimmedBy() == null ? "" : dto.getTrimmedBy())
+                .setDonePackagingAt(dto.getDonePackagingAt() == null ? Long.MIN_VALUE : dto.getDonePackagingAt().toEpochSecond(ZoneOffset.UTC))
+                .setPackagedBy(dto.getPackagedBy() == null ? "" : dto.getPackagedBy())
+                .setIssuedAt(dto.getIssuedAt() == null ? Long.MIN_VALUE : dto.getIssuedAt().toEpochSecond(ZoneOffset.UTC))
 //                no null check for order id and product entry id needed since they always have to be defined
-                .setOrderId(entity.getOrderId())
-                .setProductEntryId(entity.getProductEntryId())
+                .setOrderId(dto.getOrderId())
+                .setProductEntryId(dto.getProductEntryId())
                 .build();
     }
 }

@@ -1,10 +1,9 @@
 package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
-import com.bristle.apigateway.model.production_ticket.ProductionTicketEntity;
+import com.bristle.apigateway.model.dto.production_ticket.ProductionTicketDto;
 import com.bristle.apigateway.service.ProductionTicketService;
 import com.bristle.proto.common.RequestContext;
-import com.bristle.proto.production_ticket.ProductionTicket;
 import com.bristle.proto.production_ticket.ProductionTicketFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +29,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @CrossOrigin
@@ -46,35 +46,30 @@ public class ProductionTicketController {
     }
 
     @PutMapping
-    public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> updateProductionTicket(
-            @RequestBody ProductionTicketEntity ticketEntity,
+    public ResponseEntity<ResponseWrapper<ProductionTicketDto>> updateProductionTicket(
+            @RequestBody ProductionTicketDto ticketDto,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketEntity.toString());
+        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketDto.toString());
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (ticketEntity.getTicketId() == null) {
+            if (ticketDto.getTicketId() == null) {
                 throw new Exception("ticketId must NOT be null");
             }
 
-            validateInComingProductTicket(ticketEntity);
+            validateInComingProductTicket(ticketDto);
 
             // check that order exists
-            List<ProductionTicketEntity> existingProductTicket
-                    = m_productionTicketService.getProductionTicket(requestContextBuilder,
-                    0,
-                    1,
-                    ProductionTicketFilter.newBuilder()
-                            .setTicketId(ticketEntity.getTicketId())
-                            .build()
+            Optional<ProductionTicketDto> existingProductTicket
+                    = m_productionTicketService.getProductionTicketById(requestContextBuilder,ticketDto.getTicketId()
             );
-            if (existingProductTicket.isEmpty()) {
-                throw new Exception("Ticket with id " + ticketEntity.getTicketId() + "  does not exist");
+            if (!existingProductTicket.isPresent()) {
+                throw new Exception("Ticket with id " + ticketDto.getTicketId() + "  does not exist");
             }
 
-            ProductionTicketEntity upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketEntity);
+            ProductionTicketDto upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -98,21 +93,21 @@ public class ProductionTicketController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> createProductionTicket(
-            @RequestBody ProductionTicketEntity ticketEntity,
+    public ResponseEntity<ResponseWrapper<ProductionTicketDto>> createProductionTicket(
+            @RequestBody ProductionTicketDto ticketDto,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketEntity.toString());
+        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketDto.toString());
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (ticketEntity.getTicketId() != null) {
+            if (ticketDto.getTicketId() != null) {
                 throw new Exception("ticketId must be null");
             }
-            validateInComingProductTicket(ticketEntity);
+            validateInComingProductTicket(ticketDto);
 
-            ProductionTicketEntity upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketEntity);
+            ProductionTicketDto upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
@@ -137,7 +132,7 @@ public class ProductionTicketController {
     }
 
     @DeleteMapping
-    public ResponseEntity<ResponseWrapper<ProductionTicketEntity>> deleteProductionTicket(
+    public ResponseEntity<ResponseWrapper<ProductionTicketDto>> deleteProductionTicket(
             @RequestParam(name = "ticketId", required = true) Integer ticketId,
             HttpServletRequest httpRequest
     ) {
@@ -173,7 +168,7 @@ public class ProductionTicketController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<List<ProductionTicketEntity>>> getProductionTickets(
+    public ResponseEntity<ResponseWrapper<List<ProductionTicketDto>>> getProductionTickets(
             @RequestParam(name = "pageIndex", required = false) Integer pageIndex,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "ticketId", required = false) Integer ticketId,
@@ -277,12 +272,12 @@ public class ProductionTicketController {
         }
     }
 
-    public void validateInComingProductTicket(ProductionTicketEntity entity) throws Exception{
+    public void validateInComingProductTicket(ProductionTicketDto dto) throws Exception {
         // don't validate ticketId here since this function is reused for update and create endpoint
-        if (entity.getOrderId() == null) {
+        if (dto.getOrderId() == null) {
             throw new Exception("orderId must NOT be null");
         }
-        if (entity.getProductEntryId() == null) {
+        if (dto.getProductEntryId() == null) {
             throw new Exception("productEntryId must NOT be null");
         }
     }
