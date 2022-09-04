@@ -2,7 +2,7 @@ package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.dto.production_ticket.ProductionTicketDto;
-import com.bristle.apigateway.service.ProductionTicketService;
+import com.bristle.apigateway.service.production_ticket.ProductionTicketService;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.production_ticket.ProductionTicketFilter;
 import org.slf4j.Logger;

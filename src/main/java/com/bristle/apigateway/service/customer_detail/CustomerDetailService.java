@@ -1,10 +1,9 @@
-package com.bristle.apigateway.service;
+package com.bristle.apigateway.service.customer_detail;
 
 import com.bristle.apigateway.converter.customer_detail.CustomerDetailConverter;
 import com.bristle.apigateway.model.dto.customer_detail.CustomerDto;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.common.ResponseContext;
-import com.bristle.proto.customer_detail.Customer;
 import com.bristle.proto.customer_detail.CustomerDetailServiceGrpc;
 import com.bristle.proto.customer_detail.CustomerFilter;
 import com.bristle.proto.customer_detail.DeleteCustomerRequest;

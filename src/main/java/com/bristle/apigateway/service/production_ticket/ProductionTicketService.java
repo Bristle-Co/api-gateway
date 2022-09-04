@@ -1,4 +1,4 @@
-package com.bristle.apigateway.service;
+package com.bristle.apigateway.service.production_ticket;
 
 import com.bristle.apigateway.converter.production_ticket.ProductionTicketEntityConverter;
 import com.bristle.apigateway.model.dto.production_ticket.ProductionTicketDto;

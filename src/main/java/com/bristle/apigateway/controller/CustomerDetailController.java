@@ -2,7 +2,7 @@ package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.dto.customer_detail.CustomerDto;
-import com.bristle.apigateway.service.CustomerDetailService;
+import com.bristle.apigateway.service.customer_detail.CustomerDetailService;
 import com.bristle.proto.common.RequestContext;
 
 import com.bristle.proto.customer_detail.CustomerFilter;

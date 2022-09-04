@@ -1,4 +1,4 @@
-package com.bristle.apigateway.service;
+package com.bristle.apigateway.service.order;
 
 
 import com.bristle.apigateway.converter.order.OrderConverter;
@@ -14,6 +14,9 @@ import com.bristle.proto.order.GetUnAssignedProductEntriesRequest;
 import com.bristle.proto.order.GetUnAssignedProductEntriesResponse;
 import com.bristle.proto.order.OrderFilter;
 import com.bristle.proto.order.OrderServiceGrpc;
+import com.bristle.proto.order.PatchProductionTicketInfoRequest;
+import com.bristle.proto.order.PatchProductionTicketInfoResponse;
+import com.bristle.proto.order.ProductEntryServiceGrpc;
 import com.bristle.proto.order.UpsertOrderRequest;
 import com.bristle.proto.order.UpsertOrderResponse;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -33,12 +36,15 @@ public class OrderService {
     @GrpcClient("order_grpc_service")
     OrderServiceGrpc.OrderServiceBlockingStub m_orderGrpcService;
 
+    // use same config in application.properties because it's
+    @GrpcClient("order_grpc_service")
+    ProductEntryServiceGrpc.ProductEntryServiceBlockingStub m_productEntryService;
+
     private final OrderConverter m_orderConverter;
 
     private final ProductEntryConverter m_productEntryConverter;
 
-    OrderService(OrderConverter orderConverter, ProductEntryConverter productEntryConverter)
-    {
+    OrderService(OrderConverter orderConverter, ProductEntryConverter productEntryConverter) {
         this.m_orderConverter = orderConverter;
         this.m_productEntryConverter = productEntryConverter;
     }
@@ -72,17 +78,17 @@ public class OrderService {
     }
 
     public List<OrderDto> getOrders(RequestContext.Builder requestContext,
-                                       Integer pageIndex,
-                                       Integer pageSize,
-                                       OrderFilter filter
-                                       ) throws Exception {
+                                    Integer pageIndex,
+                                    Integer pageSize,
+                                    OrderFilter filter
+    ) throws Exception {
 
 
         GetOrdersRequest request = GetOrdersRequest.newBuilder()
                 .setRequestContext(requestContext)
                 .setFilter(filter)
                 .setPageIndex(pageIndex == null ? 0 : pageIndex)
-                .setPageSize(pageSize == null? 20 : pageSize).build();
+                .setPageSize(pageSize == null ? 20 : pageSize).build();
         GetOrdersResponse response = m_orderGrpcService.getOrders(request);
 
         if (response.getResponseContext().hasError()) {
@@ -93,7 +99,7 @@ public class OrderService {
                 .map(m_orderConverter::protoToDto).collect(Collectors.toList());
     }
 
-    public OrderDto deleteOrder(RequestContext.Builder requestContext, Integer orderId) throws Exception{
+    public OrderDto deleteOrder(RequestContext.Builder requestContext, Integer orderId) throws Exception {
         DeleteOrderRequest request = DeleteOrderRequest.newBuilder()
                 .setRequestContext(requestContext)
                 .setOrderId(orderId).build();
@@ -106,18 +112,45 @@ public class OrderService {
         return m_orderConverter.protoToDto(response.getDeletedOrder());
     }
 
-    public List<ProductEntryDto> getUnAssignedProductEntries(RequestContext.Builder requestContext) throws Exception{
+    // I didn't separate these product entry endpoints into separate service
+    // because they are related to orders and should be a part of order operations
+    public List<ProductEntryDto> getUnAssignedProductEntries(RequestContext.Builder requestContext) throws Exception {
         GetUnAssignedProductEntriesRequest request =
                 GetUnAssignedProductEntriesRequest.newBuilder()
                         .setRequestContext(requestContext)
                         .build();
         GetUnAssignedProductEntriesResponse response
-                = m_orderGrpcService.getUnAssignedProductEntries(request);
+                = m_productEntryService.getUnAssignedProductEntries(request);
 
         if (response.getResponseContext().hasError()) {
             throw new Exception(response.getResponseContext().getError().getErrorMessage());
         }
 
         return response.getProductEntryList().stream().map(m_productEntryConverter::protoToDto).collect(Collectors.toList());
+    }
+
+    public ProductEntryDto patchProductionTicketInfo(RequestContext.Builder requestContext,
+                                                     String productEntryId,
+                                                     String productTicketId,
+                                                     boolean resetToNull) throws Exception {
+        PatchProductionTicketInfoRequest.Builder request =
+                PatchProductionTicketInfoRequest.newBuilder()
+                        .setRequestContext(requestContext)
+                        .setProductEntryId(productEntryId);
+        if (resetToNull) {
+            request.setIsResetToNull(true);
+        } else {
+            request.setProductionTicketId(productTicketId);
+            request.setIsResetToNull(false);
+        }
+
+        PatchProductionTicketInfoResponse response
+                = m_productEntryService.patchProductionTicketInfo(request.build());
+
+        if (response.getResponseContext().hasError()) {
+            throw new Exception(response.getResponseContext().getError().getErrorMessage());
+        }
+
+        return m_productEntryConverter.protoToDto(response.getProductEntry());
     }
 }

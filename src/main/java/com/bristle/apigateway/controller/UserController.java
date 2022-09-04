@@ -2,7 +2,7 @@ package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.dto.user.UserDto;
-import com.bristle.apigateway.service.UserService;
+import com.bristle.apigateway.service.user.UserService;
 import com.bristle.proto.common.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

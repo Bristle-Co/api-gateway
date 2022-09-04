@@ -3,8 +3,10 @@ package com.bristle.apigateway.controller;
 
 import com.bristle.apigateway.model.ResponseWrapper;
 import com.bristle.apigateway.model.dto.order.OrderDto;
+import com.bristle.apigateway.model.dto.order.PatchProductTicketInfoOfProductEntryDto;
 import com.bristle.apigateway.model.dto.order.ProductEntryDto;
-import com.bristle.apigateway.service.OrderService;
+import com.bristle.apigateway.service.order.OrderService;
+import com.bristle.apigateway.util.UuidUtils;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.order.OrderFilter;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,12 +42,15 @@ import java.util.UUID;
 @RestController
 public class OrderController {
 
-    OrderService m_orderService;
+    private final OrderService m_orderService;
+
+    private final UuidUtils m_uuidUtils;
 
     Logger log = LoggerFactory.getLogger(OrderController.class);
 
-    public OrderController(OrderService m_orderService) {
+    public OrderController(OrderService m_orderService, UuidUtils m_uuidUtils) {
         this.m_orderService = m_orderService;
+        this.m_uuidUtils = m_uuidUtils;
     }
 
     @PostMapping
@@ -70,7 +76,7 @@ public class OrderController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "upsertOrder failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " upsertOrder failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -88,7 +94,7 @@ public class OrderController {
             @RequestBody OrderDto orderDto,
             HttpServletRequest httpRequest) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertOrder request received. \n" + orderDto.toString() + " ProductEntryList: " +
+        log.info("Request id: " + requestId + " upsertOrder request received. \n" + orderDto.toString() + " ProductEntryList: " +
                 orderDto.getProductEntries().stream().map(ProductEntryDto::toString));
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
@@ -119,7 +125,7 @@ public class OrderController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "upsertOrder failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " upsertOrder failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -208,7 +214,7 @@ public class OrderController {
             ), HttpStatus.OK);
 
         } catch (ParseException exception) {
-            log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " time parse failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -220,7 +226,7 @@ public class OrderController {
             ), HttpStatus.INTERNAL_SERVER_ERROR);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " getOrders failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -240,7 +246,7 @@ public class OrderController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "deleteOrder request received. orderId: " + orderId);
+        log.info("Request id: " + requestId + " deleteOrder request received. orderId: " + orderId);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
@@ -269,7 +275,7 @@ public class OrderController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " getOrders failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -288,7 +294,7 @@ public class OrderController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "getUnAssignedProductEntries request received.");
+        log.info("Request id: " + requestId + " getUnAssignedProductEntries request received.");
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
@@ -302,7 +308,68 @@ public class OrderController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "getUnAssignedProductEntries failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " getUnAssignedProductEntries failed. " + exception.getMessage());
+            exception.printStackTrace();
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage()
+            ), HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
+
+    @PatchMapping("/unassigned_product_entry")
+    public ResponseEntity<ResponseWrapper<ProductEntryDto>> patchProductionTicketInfo(
+            @RequestBody PatchProductTicketInfoOfProductEntryDto inComingData,
+            HttpServletRequest httpRequest
+    ) {
+        String requestId = UUID.randomUUID().toString();
+        log.info("Request id: " + requestId + " patchProductionTicketInfo request received.");
+        RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
+
+        try {
+            if (!m_uuidUtils.isValidUuid(inComingData.getProductEntryId())) {
+                throw new Exception("productEntryId must be a uuid");
+            }
+
+            if (!inComingData.isResetToNull()) {
+                if (!m_uuidUtils.isValidUuid(inComingData.getProductTicketId())) {
+                    throw new Exception("productTicketId must be a uuid");
+                } else {
+                    return new ResponseEntity<>(new ResponseWrapper<>(
+                            LocalDateTime.now(),
+                            httpRequest.getRequestURI(),
+                            requestId,
+                            HttpStatus.OK.value(),
+                            "success",
+                            m_orderService.patchProductionTicketInfo(requestContextBuilder,
+                                    inComingData.getProductEntryId(),
+                                    inComingData.getProductTicketId(),
+                                    inComingData.isResetToNull()
+                            )
+                    ), HttpStatus.OK);
+                }
+            }
+
+            return new ResponseEntity<>(new ResponseWrapper<>(
+                    LocalDateTime.now(),
+                    httpRequest.getRequestURI(),
+                    requestId,
+                    HttpStatus.OK.value(),
+                    "success",
+                    m_orderService.patchProductionTicketInfo(requestContextBuilder,
+                            inComingData.getProductEntryId(),
+                            null,
+                            inComingData.isResetToNull()
+                    )
+            ), HttpStatus.OK);
+
+        } catch (Exception exception) {
+            log.error("Request id: " + requestId + " patchProductionTicketInfo failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(

@@ -1,4 +1,4 @@
-package com.bristle.apigateway.service;
+package com.bristle.apigateway.service.user;
 
 import com.bristle.apigateway.converter.user.UserEntityConverter;
 import com.bristle.apigateway.model.dto.user.UserDto;
