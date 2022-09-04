@@ -2,8 +2,6 @@ package com.bristle.apigateway.converter.order;
 
 import com.bristle.apigateway.model.dto.order.OrderDto;
 import com.bristle.apigateway.model.dto.order.ProductEntryDto;
-import com.bristle.apigateway.model.order.OrderEntity;
-import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.bristle.proto.order.Order;
 import com.bristle.proto.order.ProductEntry;
 import org.springframework.stereotype.Component;

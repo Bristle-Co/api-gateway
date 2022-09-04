@@ -10,12 +10,13 @@ import com.bristle.proto.order.DeleteOrderRequest;
 import com.bristle.proto.order.DeleteOrderResponse;
 import com.bristle.proto.order.GetOrdersRequest;
 import com.bristle.proto.order.GetOrdersResponse;
-import com.bristle.proto.order.GetUnAssignedProductEntriesRequest;
-import com.bristle.proto.order.GetUnAssignedProductEntriesResponse;
+import com.bristle.proto.order.GetProductEntriesRequest;
+import com.bristle.proto.order.GetProductEntriesResponse;
 import com.bristle.proto.order.OrderFilter;
 import com.bristle.proto.order.OrderServiceGrpc;
 import com.bristle.proto.order.PatchProductionTicketInfoRequest;
 import com.bristle.proto.order.PatchProductionTicketInfoResponse;
+import com.bristle.proto.order.ProductEntryFilter;
 import com.bristle.proto.order.ProductEntryServiceGrpc;
 import com.bristle.proto.order.UpsertOrderRequest;
 import com.bristle.proto.order.UpsertOrderResponse;
@@ -114,13 +115,15 @@ public class OrderService {
 
     // I didn't separate these product entry endpoints into separate service
     // because they are related to orders and should be a part of order operations
-    public List<ProductEntryDto> getUnAssignedProductEntries(RequestContext.Builder requestContext) throws Exception {
-        GetUnAssignedProductEntriesRequest request =
-                GetUnAssignedProductEntriesRequest.newBuilder()
+    public List<ProductEntryDto> getProductEntries(RequestContext.Builder requestContext,
+                                                   ProductEntryFilter filter) throws Exception {
+        GetProductEntriesRequest request =
+                GetProductEntriesRequest.newBuilder()
                         .setRequestContext(requestContext)
+                        .setFilter(filter)
                         .build();
-        GetUnAssignedProductEntriesResponse response
-                = m_productEntryService.getUnAssignedProductEntries(request);
+        GetProductEntriesResponse response
+                = m_productEntryService.getProductEntries(request);
 
         if (response.getResponseContext().hasError()) {
             throw new Exception(response.getResponseContext().getError().getErrorMessage());
@@ -128,6 +131,7 @@ public class OrderService {
 
         return response.getProductEntryList().stream().map(m_productEntryConverter::protoToDto).collect(Collectors.toList());
     }
+
 
     public ProductEntryDto patchProductionTicketInfo(RequestContext.Builder requestContext,
                                                      String productEntryId,

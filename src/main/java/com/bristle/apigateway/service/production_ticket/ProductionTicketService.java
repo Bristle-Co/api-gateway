@@ -108,7 +108,7 @@ public class ProductionTicketService {
         }
 
         log.info("Request id: " + request.getRequestContext().getRequestId()
-                + "getProductionTicketById request sent through getProductionTicket grpc request to customer-detail-service sent");
+                + "getProductionTicketById request sent through getProductionTicket grpc request to production-ticket-service sent");
 
         ResponseContext responseContext = response.getResponseContext();
         if (responseContext.hasError()) {

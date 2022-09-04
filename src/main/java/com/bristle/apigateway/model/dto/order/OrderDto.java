@@ -1,15 +1,7 @@
 package com.bristle.apigateway.model.dto.order;
 
-import com.bristle.apigateway.model.order.ProductEntryEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,10 +19,10 @@ public class OrderDto {
 
     private String note;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime deliveredAt;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime issuedAt;
 
     private List<ProductEntryDto> productEntries;

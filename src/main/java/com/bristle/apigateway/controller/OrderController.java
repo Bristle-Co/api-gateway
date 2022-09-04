@@ -9,6 +9,8 @@ import com.bristle.apigateway.service.order.OrderService;
 import com.bristle.apigateway.util.UuidUtils;
 import com.bristle.proto.common.RequestContext;
 import com.bristle.proto.order.OrderFilter;
+import com.bristle.proto.order.ProductEntryFilter;
+import com.bristle.proto.order.ProductEntryFilterField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,14 +28,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -289,26 +291,33 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/unassigned_product_entry")
-    public ResponseEntity<ResponseWrapper<List<ProductEntryDto>>> getUnAssignedProductEntries(
+    @GetMapping("/product_entries")
+    public ResponseEntity<ResponseWrapper<List<ProductEntryDto>>> getProductEntries(
+            @RequestParam(name = "productEntryId", required = false) String productEntryId,
+            @RequestParam(name = "isUnAssigned", required = false) Boolean isUnAssigned,
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + " getUnAssignedProductEntries request received.");
+        log.info("Request id: " + requestId + " getProductEntries request received. " +
+                "Params: productEntryId: " + productEntryId +
+                " isUnAssigned: " + isUnAssigned);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
-
+        ProductEntryFilter.Builder filter = ProductEntryFilter.newBuilder();
         try {
+
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
                     httpRequest.getRequestURI(),
                     requestId,
                     HttpStatus.OK.value(),
                     "success",
-                    m_orderService.getUnAssignedProductEntries(requestContextBuilder)
-            ), HttpStatus.OK);
+                    m_orderService.getProductEntries(requestContextBuilder,
+                            validateAndBuildProductEntryFilter(productEntryId, isUnAssigned))
+
+                    ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + " getUnAssignedProductEntries failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " getProductEntries failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -322,7 +331,7 @@ public class OrderController {
         }
     }
 
-    @PatchMapping("/unassigned_product_entry")
+    @PatchMapping("/product_entries")
     public ResponseEntity<ResponseWrapper<ProductEntryDto>> patchProductionTicketInfo(
             @RequestBody PatchProductTicketInfoOfProductEntryDto inComingData,
             HttpServletRequest httpRequest
@@ -383,6 +392,26 @@ public class OrderController {
         }
     }
 
+    private ProductEntryFilter validateAndBuildProductEntryFilter(String productEntryId, Boolean isUnAssigned) throws Exception {
+        ProductEntryFilter.Builder filter = ProductEntryFilter.newBuilder();
+        if (productEntryId != null && isUnAssigned != null) {
+            throw new Exception("please provide at only one filter argument");
+        }
+        if (productEntryId == null && isUnAssigned == null) {
+            throw new Exception("please provide at least one filter argument");
+        }
+        if (Boolean.TRUE.equals(isUnAssigned)) {
+            filter.setFilterField(ProductEntryFilterField.UNASSIGNED);
+        } else {
+            if (!m_uuidUtils.isValidUuid(productEntryId)) {
+                throw new Exception("productEntryId must be a valid uuid");
+            }
+            filter.setFilterField(ProductEntryFilterField.PRODUCT_ENTRY_ID);
+            filter.setProductEntryId(productEntryId);
+        }
+        return filter.build();
+    }
+
     private void validateToBeCreatedOrder(OrderDto dto) throws Exception {
         if (dto.getOrderId() != null) {
             // orderId is assigned by db
@@ -409,7 +438,10 @@ public class OrderController {
 
         List<ProductEntryDto> productEntryDtos = dto.getProductEntries();
         for (int i = 0; i < productEntryDtos.size(); i++) {
-            if (dto.getOrderId().equals(productEntryDtos.get(i).getOrderId())) {
+            if (!dto.getOrderId().equals(productEntryDtos.get(i).getOrderId())) {
+                log.error(dto.getOrderId().toString());
+                log.error(productEntryDtos.get(i).getOrderId().toString());
+                log.error(String.valueOf(dto.getOrderId().equals(productEntryDtos.get(i).getOrderId())));
                 throw new Exception("orderId in ProductEntry must match parent order's id, fail at ProductEntry index " + i);
             }
         }

@@ -1,7 +1,6 @@
 package com.bristle.apigateway.converter.user;
 
 import com.bristle.apigateway.model.dto.user.UserDto;
-import com.bristle.apigateway.model.user.UserEntity;
 import com.bristle.proto.user.User;
 import org.springframework.stereotype.Component;
 
