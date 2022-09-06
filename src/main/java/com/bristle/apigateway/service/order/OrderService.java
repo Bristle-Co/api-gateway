@@ -135,7 +135,7 @@ public class OrderService {
 
     public ProductEntryDto patchProductionTicketInfo(RequestContext.Builder requestContext,
                                                      String productEntryId,
-                                                     String productTicketId,
+                                                     Integer productTicketId,
                                                      boolean resetToNull) throws Exception {
         PatchProductionTicketInfoRequest.Builder request =
                 PatchProductionTicketInfoRequest.newBuilder()

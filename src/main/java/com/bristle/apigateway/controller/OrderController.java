@@ -346,9 +346,7 @@ public class OrderController {
             }
 
             if (!inComingData.isResetToNull()) {
-                if (!m_uuidUtils.isValidUuid(inComingData.getProductTicketId())) {
-                    throw new Exception("productTicketId must be a uuid");
-                } else {
+
                     return new ResponseEntity<>(new ResponseWrapper<>(
                             LocalDateTime.now(),
                             httpRequest.getRequestURI(),
@@ -361,7 +359,6 @@ public class OrderController {
                                     inComingData.isResetToNull()
                             )
                     ), HttpStatus.OK);
-                }
             }
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -403,9 +400,6 @@ public class OrderController {
         if (Boolean.TRUE.equals(isUnAssigned)) {
             filter.setFilterField(ProductEntryFilterField.UNASSIGNED);
         } else {
-            if (!m_uuidUtils.isValidUuid(productEntryId)) {
-                throw new Exception("productEntryId must be a valid uuid");
-            }
             filter.setFilterField(ProductEntryFilterField.PRODUCT_ENTRY_ID);
             filter.setProductEntryId(productEntryId);
         }
@@ -439,9 +433,6 @@ public class OrderController {
         List<ProductEntryDto> productEntryDtos = dto.getProductEntries();
         for (int i = 0; i < productEntryDtos.size(); i++) {
             if (!dto.getOrderId().equals(productEntryDtos.get(i).getOrderId())) {
-                log.error(dto.getOrderId().toString());
-                log.error(productEntryDtos.get(i).getOrderId().toString());
-                log.error(String.valueOf(dto.getOrderId().equals(productEntryDtos.get(i).getOrderId())));
                 throw new Exception("orderId in ProductEntry must match parent order's id, fail at ProductEntry index " + i);
             }
         }

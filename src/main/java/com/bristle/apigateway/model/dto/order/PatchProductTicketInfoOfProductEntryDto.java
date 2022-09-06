@@ -4,11 +4,11 @@ public class PatchProductTicketInfoOfProductEntryDto {
 
     private String productEntryId;
 
-    private String productTicketId;
+    private Integer productTicketId;
 
     private boolean resetToNull = false; // false as default
 
-    public PatchProductTicketInfoOfProductEntryDto(String productEntryId, String productTicketId) {
+    public PatchProductTicketInfoOfProductEntryDto(String productEntryId, Integer productTicketId) {
         this.productEntryId = productEntryId;
         this.productTicketId = productTicketId;
     }
@@ -21,11 +21,11 @@ public class PatchProductTicketInfoOfProductEntryDto {
         this.productEntryId = productEntryId;
     }
 
-    public String getProductTicketId() {
+    public Integer getProductTicketId() {
         return productTicketId;
     }
 
-    public void setProductTicketId(String productTicketId) {
+    public void setProductTicketId(Integer productTicketId) {
         this.productTicketId = productTicketId;
     }
 

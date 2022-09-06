@@ -22,8 +22,8 @@ public class ProductEntryConverter {
                 productEntryProto.getQuantity() == Integer.MIN_VALUE ? null : productEntryProto.getQuantity(),
                 productEntryProto.getPrice() == Integer.MIN_VALUE ? null : productEntryProto.getPrice(),
                 productEntryProto.getProductTicketId().equals("") ? null : productEntryProto.getProductTicketId(),
-                productEntryProto.getOrderId() == Integer.MIN_VALUE ? null : productEntryProto.getOrderId()
-        );
+                productEntryProto.getOrderId() == Integer.MIN_VALUE ? null : productEntryProto.getOrderId(),
+                productEntryProto.getCustomerId().equals("") ? null : productEntryProto.getCustomerId());
     }
 
     public ProductEntryDto protoToDto(ProductEntry productEntryProto, OrderDto orderEntity) {
