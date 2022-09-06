@@ -14,7 +14,7 @@ public class ProductEntryDto {
 
     private Integer price;
 
-    private String productTicketId;
+    private Integer productTicketId;
 
     private Integer orderId;
 
@@ -66,11 +66,11 @@ public class ProductEntryDto {
         this.price = price;
     }
 
-    public String getProductTicketId() {
+    public Integer getProductTicketId() {
         return productTicketId;
     }
 
-    public void setProductTicketId(String productTicketId) {
+    public void setProductTicketId(Integer productTicketId) {
         this.productTicketId = productTicketId;
     }
 
@@ -93,7 +93,7 @@ public class ProductEntryDto {
     public ProductEntryDto() {
     }
 
-    public ProductEntryDto(String productEntryId, String model, Integer quantity, Integer price, String productTicketId, Integer orderId) {
+    public ProductEntryDto(String productEntryId, String model, Integer quantity, Integer price, Integer productTicketId, Integer orderId) {
         this.productEntryId = productEntryId;
         this.model = model;
         this.quantity = quantity;
@@ -102,7 +102,7 @@ public class ProductEntryDto {
         this.orderId = orderId;
     }
 
-    public ProductEntryDto(String productEntryId, String model, Integer quantity, Integer price, String productTicketId, Integer orderId, String customerId) {
+    public ProductEntryDto(String productEntryId, String model, Integer quantity, Integer price, Integer productTicketId, Integer orderId, String customerId) {
         this.productEntryId = productEntryId;
         this.model = model;
         this.quantity = quantity;

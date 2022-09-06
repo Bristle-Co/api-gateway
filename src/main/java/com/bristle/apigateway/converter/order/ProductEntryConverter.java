@@ -21,7 +21,7 @@ public class ProductEntryConverter {
                 // thus we define -2,147,483,648 ( 0x80000000 ) to be null
                 productEntryProto.getQuantity() == Integer.MIN_VALUE ? null : productEntryProto.getQuantity(),
                 productEntryProto.getPrice() == Integer.MIN_VALUE ? null : productEntryProto.getPrice(),
-                productEntryProto.getProductTicketId().equals("") ? null : productEntryProto.getProductTicketId(),
+                productEntryProto.getProductTicketId() == Integer.MIN_VALUE? null : productEntryProto.getProductTicketId(),
                 productEntryProto.getOrderId() == Integer.MIN_VALUE ? null : productEntryProto.getOrderId(),
                 productEntryProto.getCustomerId().equals("") ? null : productEntryProto.getCustomerId());
     }
@@ -39,7 +39,7 @@ public class ProductEntryConverter {
                 // thus we define -2,147,483,648 ( 0x80000000 ) to be null
                 productEntryProto.getQuantity() == Integer.MIN_VALUE ? null : productEntryProto.getQuantity(),
                 productEntryProto.getPrice() == Integer.MIN_VALUE ? null : productEntryProto.getPrice(),
-                productEntryProto.getProductTicketId().equals("") ? null : productEntryProto.getProductTicketId(),
+                productEntryProto.getProductTicketId() == Integer.MIN_VALUE ? null : productEntryProto.getProductTicketId(),
                 orderEntity.getOrderId() == Integer.MIN_VALUE ? null : orderEntity.getOrderId()
         );
     }
@@ -52,7 +52,7 @@ public class ProductEntryConverter {
                 .setModel(productEntryDto.getModel() == null ? "" : productEntryDto.getModel())
                 .setQuantity(productEntryDto.getQuantity() == null ? Integer.MIN_VALUE : productEntryDto.getQuantity())
                 .setPrice(productEntryDto.getPrice() == null ? Integer.MIN_VALUE : productEntryDto.getPrice())
-                .setProductTicketId(productEntryDto.getProductTicketId() == null ? "" : productEntryDto.getProductTicketId())
+                .setProductTicketId(productEntryDto.getProductTicketId() == null ? Integer.MIN_VALUE : productEntryDto.getProductTicketId())
                 // order Id can be null when order with product entry is first inserted
                 // the id foreign key column is then set when we do JPARepository.save(orderEntity)
                 .setOrderId(oderDto.getOrderId() == null ? Integer.MIN_VALUE : oderDto.getOrderId())
