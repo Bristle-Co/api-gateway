@@ -412,6 +412,10 @@ public class OrderController {
             throw new Exception("orderId must be null when creating order");
         }
 
+        if (!StringUtils.hasText(dto.getCustomerId())) {
+            throw new Exception("customerId must not be NULL");
+        }
+
         if (dto.getIssuedAt() != null) {
             // a newly created order must let server log current timestamp
             throw new Exception("issuedAt must be null when creating order");
@@ -428,6 +432,10 @@ public class OrderController {
     private void validateToBeUpdatedOrder(OrderDto dto) throws Exception {
         if (dto.getOrderId() == null) {
             throw new Exception("orderId must NOT be null");
+        }
+
+        if (StringUtils.hasText(dto.getCustomerId())) {
+            throw new Exception("customerId must not be NULL");
         }
 
         List<ProductEntryDto> productEntryDtos = dto.getProductEntries();

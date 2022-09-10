@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,15 +52,11 @@ public class ProductionTicketController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketDto.toString());
+        log.info("Request id: " + requestId + " upsertProductionTicket request received. \n" + ticketDto.toString());
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (ticketDto.getTicketId() == null) {
-                throw new Exception("ticketId must NOT be null");
-            }
-
-            validateInComingProductTicket(ticketDto);
+            validateInComingProductionTicket(ticketDto, false);
 
             // check that order exists
             Optional<ProductionTicketDto> existingProductTicket
@@ -80,7 +77,7 @@ public class ProductionTicketController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "upsertProductionTicket failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " upsertProductionTicket failed. " + exception.getMessage());
 
             return new ResponseEntity<>(new ResponseWrapper<>(
                     LocalDateTime.now(),
@@ -98,14 +95,11 @@ public class ProductionTicketController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertProductionTicket request received. \n" + ticketDto.toString());
+        log.info("Request id: " + requestId + " createProductionTicket request received. \n" + ticketDto.toString());
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
-            if (ticketDto.getTicketId() != null) {
-                throw new Exception("ticketId must be null");
-            }
-            validateInComingProductTicket(ticketDto);
+            validateInComingProductionTicket(ticketDto, true);
 
             ProductionTicketDto upsertedTicket = m_productionTicketService.upsertProductionTicket(requestContextBuilder, ticketDto);
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -118,7 +112,7 @@ public class ProductionTicketController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "upsertProductionTicket failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " createProductionTicket failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -137,7 +131,7 @@ public class ProductionTicketController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "deleteProductionTicket request received. Id: " + ticketId);
+        log.info("Request id: " + requestId + " deleteProductionTicket request received. Id: " + ticketId);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
 
         try {
@@ -153,7 +147,7 @@ public class ProductionTicketController {
             ), HttpStatus.OK);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "deleteProdctionTicket failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " deleteProdctionTicket failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -183,9 +177,9 @@ public class ProductionTicketController {
             HttpServletRequest httpRequest
     ) {
         String requestId = UUID.randomUUID().toString();
-        log.info("Request id: " + requestId + "upsertOrder request received. " +
-                "pageIndex" + pageIndex + "pageSize" + pageSize +
-                "ticketId: " + ticketId + " customerId: " + customerId +
+        log.info("Request id: " + requestId + " upsertOrder request received. " +
+                " pageIndex: " + pageIndex + " pageSize: " + pageSize +
+                " ticketId: " + ticketId + " customerId: " + customerId +
                 " bristleType: " + bristleType + " model: " + model +
                 " productName: " + productName + " dueDateFrom: " + dueDateFrom +
                 " dueDateTo: " + dueDateTo + " issuedAtFrom: " + issuedAtFrom + " issuedAtTo: " + issuedAtTo);
@@ -246,7 +240,7 @@ public class ProductionTicketController {
             ), HttpStatus.OK);
 
         } catch (ParseException exception) {
-            log.error("Request id: " + requestId + "time parse failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " time parse failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -258,7 +252,7 @@ public class ProductionTicketController {
             ), HttpStatus.INTERNAL_SERVER_ERROR);
 
         } catch (Exception exception) {
-            log.error("Request id: " + requestId + "getOrders failed. " + exception.getMessage());
+            log.error("Request id: " + requestId + " getOrders failed. " + exception.getMessage());
             exception.printStackTrace();
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -272,13 +266,36 @@ public class ProductionTicketController {
         }
     }
 
-    public void validateInComingProductTicket(ProductionTicketDto dto) throws Exception {
+    public void validateInComingProductionTicket(ProductionTicketDto dto, boolean isCreating) throws Exception {
         // don't validate ticketId here since this function is reused for update and create endpoint
-        if (dto.getOrderId() == null) {
-            throw new Exception("orderId must NOT be null");
+        if (isCreating) {
+            if (dto.getTicketId() != null) {
+                throw new Exception("ticketId must be NULL");
+            }
+
+            if (dto.getIssuedAt() != null) {
+                throw new Exception("issuedAt must be NULL");
+            }
+        } else {
+            if (dto.getTicketId() == null) {
+                throw new Exception("ticketId must NOT be NULL");
+            }
+
+            if (dto.getIssuedAt() == null) {
+                throw new Exception("issuedAt must NOT be NULL");
+            }
         }
-        if (dto.getProductEntryId() == null) {
-            throw new Exception("productEntryId must NOT be null");
+
+
+        if (dto.getOrderId() == null) {
+            throw new Exception("orderId must NOT be NULL");
+        }
+        if (!StringUtils.hasText(dto.getProductEntryId()) ) {
+            throw new Exception("productEntryId must NOT be NULL");
+        }
+
+        if (!StringUtils.hasText(dto.getCustomerId())) {
+            throw new Exception("customerId must NOT but NULL");
         }
     }
 }
