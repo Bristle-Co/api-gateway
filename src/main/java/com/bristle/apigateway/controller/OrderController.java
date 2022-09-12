@@ -302,7 +302,6 @@ public class OrderController {
                 "Params: productEntryId: " + productEntryId +
                 " isUnAssigned: " + isUnAssigned);
         RequestContext.Builder requestContextBuilder = RequestContext.newBuilder().setRequestId(requestId);
-        ProductEntryFilter.Builder filter = ProductEntryFilter.newBuilder();
         try {
 
             return new ResponseEntity<>(new ResponseWrapper<>(
@@ -434,7 +433,7 @@ public class OrderController {
             throw new Exception("orderId must NOT be null");
         }
 
-        if (StringUtils.hasText(dto.getCustomerId())) {
+        if (!StringUtils.hasText(dto.getCustomerId())) {
             throw new Exception("customerId must not be NULL");
         }
 
